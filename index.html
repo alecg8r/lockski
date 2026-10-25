@@ -54,15 +54,15 @@ h1 { margin: 0; font-size: clamp(28px, 8vw, 36px); font-weight: 700; letter-spac
 .hello { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; } .hello .d { font-size: 13px; color: var(--muted); font-weight: 700; letter-spacing: .08em; text-transform: lowercase; }
 .sh { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; } .sh h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
 .sh button { appearance: none; border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0; }
-.lotd { --tc: #444; position: relative; overflow: hidden; border-radius: 28px; padding: 20px; display: grid; gap: 18px; cursor: pointer;
+.lotd { --tc: #444; position: relative; overflow: hidden; border-radius: 24px; padding: 16px; display: grid; gap: 14px; cursor: pointer;
   background: linear-gradient(165deg, #161616, #060606 70%); border: 1px solid #2f2f2f; box-shadow: 0 30px 60px -30px rgba(0,0,0,.9); }
 .lotd::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(70% 60% at 100% 0%, color-mix(in srgb, var(--tc) 38%, transparent), transparent 70%); }
 .lotd > * { position: relative; }
 .lotd .lh { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; font-weight: 700; letter-spacing: .16em; text-transform: lowercase; color: var(--muted); }
 .lotd .lh span:first-child { display: inline-flex; align-items: center; gap: 7px; color: var(--fg); } .lotd .lh svg { width: 14px; height: 14px; }
-.lotd .core { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.lotd .big2 { text-align: right; line-height: .9; } .lotd .big2 b { font-size: 76px; font-weight: 700; letter-spacing: -0.05em; } .lotd .big2 small { display: block; font-size: 13px; color: var(--muted); margin-top: 8px; letter-spacing: 0; }
-.lotd .tn { font-size: 32px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; } .lotd .vs2 { color: var(--muted); font-size: 14.5px; margin-top: 6px; }
+.lotd .core { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; } .lotd .tnw { min-width: 0; }
+.lotd .big2 { text-align: right; line-height: .9; } .lotd .big2 b { font-size: 48px; font-weight: 700; letter-spacing: -0.05em; } .lotd .big2 small { display: block; font-size: 13px; color: var(--muted); margin-top: 8px; letter-spacing: 0; }
+.lotd .tn { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; } .lotd .vs2 { color: var(--muted); font-size: 13.5px; margin-top: 4px; }
 .lotd .callrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid #2a2a2a; }
 .lotd .callrow b { font-size: 18px; font-weight: 700; white-space: nowrap; } .lotd .callrow span { font-size: 13px; color: var(--muted); text-align: right; }
 .lotd .callrow.take { background: var(--fg); border-color: var(--fg); } .lotd .callrow.take b { color: #000; } .lotd .callrow.take span { color: #333; }
@@ -71,6 +71,12 @@ h1 { margin: 0; font-size: clamp(28px, 8vw, 36px); font-weight: 700; letter-spac
 .ghost.done { border-color: #3a3a3a; color: var(--muted); }
 .rail { display: grid; grid-auto-flow: column; grid-auto-columns: 172px; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -16px; padding: 2px 16px 6px; scrollbar-width: none; }
 .rail::-webkit-scrollbar { display: none; } .rail .bet { scroll-snap-align: start; aspect-ratio: auto; min-height: 236px; }
+.track { appearance: none; width: 100%; text-align: left; color: inherit; cursor: pointer; display: grid; gap: 10px; padding: 16px; border-radius: 20px; border: 1px solid var(--line);
+  background: radial-gradient(90% 120% at 0% 0%, rgba(34,197,94,.10), transparent 60%), var(--card); }
+.track .trh { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; letter-spacing: .14em; color: var(--muted); }
+.track .trb { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; } .track .trb > b { font-size: 40px; font-weight: 700; letter-spacing: -.03em; line-height: 1; } .track .trb span { color: var(--muted); font-size: 13.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; } .chips i { font-style: normal; font-size: 10px; font-weight: 700; letter-spacing: .02em; padding: 4px 6px; border-radius: 7px; text-transform: uppercase; }
+.chips i.w { background: rgba(34,197,94,.18); color: #4ade80; } .chips i.l { background: rgba(239,68,68,.16); color: #f87171; }
 .money { appearance: none; width: 100%; text-align: left; color: inherit; display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); cursor: pointer; }
 .money b { font-size: 26px; font-weight: 700; letter-spacing: -.02em; display: block; line-height: 1.1; } .money span { font-size: 13px; color: var(--muted); }
 .money svg { width: 110px; height: 40px; } .money svg polyline { fill: none; stroke: #fff; stroke-width: 2; stroke-linejoin: round; }
@@ -114,9 +120,12 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .bet .pc { text-align: right; line-height: 1; } .bet .pc b { font-size: 30px; font-weight: 700; letter-spacing: -0.03em; } .bet .pc small { display: block; font-size: 11px; color: var(--muted); margin-top: 4px; }
 .bet .tm { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bet .gm { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
-.go { margin-top: auto; appearance: none; display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; border-radius: 12px; background: var(--fg); color: #000; font-weight: 700; font-size: 13px; text-decoration: none; border: 0; cursor: pointer; white-space: nowrap; }
-.go:hover { background: #ddd; } .go svg { width: 14px; height: 14px; }
-.go.wide { height: 48px; font-size: 15px; border-radius: 14px; }
+.go { margin-top: auto; appearance: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 40px; padding: 0 5px 0 16px; border-radius: 999px;
+  background: linear-gradient(180deg, #fff, #e9e9e9); color: #000; font-weight: 700; font-size: 13px; letter-spacing: -.01em; text-decoration: none; border: 0; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 6px 18px -8px rgba(255,255,255,.35); transition: transform .15s, box-shadow .15s; }
+.go:hover { box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 8px 22px -8px rgba(255,255,255,.5); } .go:active { transform: scale(.97); }
+.go svg { width: 30px; height: 30px; padding: 8px; border-radius: 50%; background: #000; color: #fff; flex: none; }
+.go.wide { height: 50px; font-size: 15px; padding-left: 20px; } .go.wide svg { width: 38px; height: 38px; padding: 10px; }
 .flag { font-size: 10.5px; font-weight: 700; color: #000; background: var(--fg); border-radius: 6px; padding: 1px 6px; letter-spacing: .04em; text-transform: none; }
 .empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 6px; } .empty b { font-size: 17px; } .empty p { margin: 0; color: var(--muted); font-size: 14px; }
 
@@ -246,7 +255,7 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .gcard { padding: 16px 16px 12px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); display: grid; gap: 10px; }
 .gcard.dim { opacity: .6; } .gcard h3 { margin: 0; font-size: 12px; color: var(--muted); letter-spacing: .1em; text-transform: lowercase; font-weight: 700; display: flex; justify-content: space-between; } .gcard h3 b { color: var(--fg); font-size: 15px; letter-spacing: 0; text-transform: none; }
 .legend { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 12px; color: var(--muted); } .legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; margin: 0 6px 3px 0; border-radius: 2px; background: #fff; }
-.legend .l2::before { background: repeating-linear-gradient(90deg, #fff 0 5px, transparent 5px 9px); } .legend .l3::before { background: repeating-linear-gradient(90deg, #555 0 3px, transparent 3px 7px); } .legend .l4::before { height: 10px; background: transparent; border: 1.5px dashed #fff; border-radius: 2px; }
+.legend .lg-g::before { background: #22c55e; height: 8px; } .legend .lg-r::before { background: #ef4444; height: 8px; } .legend .l2::before { background: repeating-linear-gradient(90deg, #fff 0 5px, transparent 5px 9px); } .legend .l3::before { background: repeating-linear-gradient(90deg, #555 0 3px, transparent 3px 7px); } .legend .l4::before { height: 10px; background: transparent; border: 1.5px dashed #fff; border-radius: 2px; }
 .unitrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); font-size: 14px; }
 .unitrow input { width: 70px; background: #000; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 16px; font-weight: 700; text-align: right; }
 .hrow .pk .pill { display: inline-block; margin-top: 3px; }
@@ -460,7 +469,7 @@ function bestBets() {
   const all = picks().map(B => { const c = callFor(B); return { ...B, c, priced: !!(c && c.d), ev: c && c.d && (c.d.k === "take" || c.d.k === "news") ? B.p * c.mu.x - 1 : null }; });
   const value = all.filter(B => B.ev != null && B.ev > 0).sort((a, b) => b.ev - a.ev);
   const early = all.filter(B => !B.priced && B.p >= 0.56).sort((a, b) => b.p - a.p);
-  return [...value.slice(0, 4), ...early].slice(0, 8);
+  return [...value.slice(0, 4), ...early].slice(0, 8).sort((a, b) => a.g.startUTC < b.g.startUTC ? -1 : 1);   // shown soonest first
 }
 
 /* ---------------- Parlays (straight team-to-win picks only) ----------------
@@ -538,7 +547,7 @@ function openParlay() {
     <div class="betform box" style="gap:10px">
       <label class="field"><span>I put down</span><div><i>$</i><input id="px-stake" inputmode="decimal" value="${S.unit}"></div></label>
       <div class="payline" id="px-pay"></div>
-      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
+      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
       <button class="save" id="px-save">I took this parlay</button>
     </div>` : `<div class="box"><p>Add at least one more pick to make a parlay.</p></div>`}
     ${SLIP.length ? `<button class="linkbtn" data-clear="1">Clear parlay</button>` : ""}
@@ -583,24 +592,22 @@ function betCard(B) {
     <div class="row">${badge(B.team)}<div class="pc"><b>${pct(B.p)}</b><small>to win</small></div></div>
     <div><div class="tm">${esc(nick(B.team))}</div><div class="gm">${B.atHome ? "vs" : "at"} ${esc(nick(B.opp))}<br>${esc(whenTxt(B.g))}</div>
       ${c && c.d ? `<div style="margin-top:7px"><span class="pill ${c.d.k}">${esc(c.d.pill)}</span></div>` : `<div style="margin-top:7px"><span class="pill">worth it at ${fmtX(minMult(B.p))}+</span></div>`}</div>
-    <a class="go" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
+    <a class="go" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
   </article>`;
 }
 function lockOfDay() {
   const today = todayET(), all = picks();
   const t = all.filter(x => x.g.date === today).sort((a, b) => b.p - a.p)[0];
-  return t || all.sort((a, b) => b.p - a.p)[0] || null;
+  if (t) return t;
+  const next = all.map(x => x.g.date).sort()[0];   // today's games all started: use the next game day's top pick
+  return all.filter(x => x.g.date === next).sort((a, b) => b.p - a.p)[0] || null;
 }
 function lockCard(L) {
-  const c = callFor(L), d = c && c.d, tc = (TEAM[L.team] || [])[2] || "#444";
-  const mine = betsList().filter(b => b.gid === L.g.id);
+  const tc = (TEAM[L.team] || [])[2] || "#444";
   return `<article class="lotd" style="--tc:${tc}" data-gid="${esc(L.g.id)}" tabindex="0" aria-label="Lock of the day: ${esc(full(L.team))}, ${pct(L.p)} chance to win">
-    <div class="lh"><span>${lockIcon}Lock of the day · most likely winner</span><span>${esc(whenTxt(L.g))}</span></div>
-    <div class="core">${badge(L.team, "xl")}<div class="big2"><b>${Math.round(L.p * 100)}<span style="font-size:.5em">%</span></b><small>chance to win</small></div></div>
-    <div><div class="tn">${esc(full(L.team))}</div><div class="vs2">${L.atHome ? "vs" : "at"} ${esc(full(L.opp))}</div></div>
-    ${d ? `<div class="callrow ${d.k === "take" ? "take" : ""}"><b>${esc(d.t)}</b><span>${c.mu.typed ? "" : "about "}${fmtX(c.mu.x)} · $10 → $${(10 * c.mu.x).toFixed(2)}</span></div>` : `<div class="callrow"><b>Worth it at ${fmtX(minMult(L.p))}+</b><span>Check the PrizePicks multiplier</span></div>`}
-    <div class="btn2"><a class="go" style="height:48px;font-size:14px;margin:0" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
-      ${mine.length ? `<button class="ghost done" data-open="${esc(L.g.id)}">You bet ${money(mine.reduce((a, b) => a + b.stake, 0))} ✓</button>` : `<button class="ghost" data-took="${esc(L.g.id)}" data-team="${esc(L.team)}">I took this bet</button>`}</div>
+    <div class="lh"><span>${lockIcon}lock of the day</span><span>${esc(whenTxt(L.g))}</span></div>
+    <div class="core">${badge(L.team, "l")}<div class="tnw"><div class="tn">${esc(full(L.team))}</div><div class="vs2">${L.atHome ? "vs" : "at"} ${esc(full(L.opp))}</div></div><div class="big2"><b>${Math.round(L.p * 100)}<span style="font-size:.5em">%</span></b><small>to win</small></div></div>
+    <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
   </article>`;
 }
 function moneyCard() {
@@ -628,7 +635,7 @@ function renderBets() {
     ${staleHtml()}
     ${L ? lockCard(L) : ""}
     <div class="sh"><h2>Best bets this week</h2><button data-go="games">Next 7 days</button></div>
-    ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">priced games first, biggest expected profit per $10. later games show the multiplier that makes them worth it and update on their own as prices post.</p>`
+    ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">soonest first. later games show the multiplier that makes them worth it and update on their own as prices post.</p>`
       : `<div class="empty"><b>no strong picks in the next 7 days</b><p>none of the upcoming games clear our bar yet. this updates on its own as goalies, injuries and prices come in.</p></div>`}
     ${""/* Best parlay of the day removed after backtest: suggested parlays lost 40% of stakes in 2025-26 */}
     ${upcoming.length ? `<div class="sh"><h2>${todays.length ? "Today's games" : "Next games"}</h2><button data-go="games">See all</button></div>
@@ -639,12 +646,12 @@ function renderBets() {
     <div class="sh"><h2>Who's hot</h2><button data-go="hot">See all</button></div>
     <div class="hot2"><div><h3>Teams</h3>${teams.map(([t, x], i) => `<div class="hr" data-hot="teams" data-i="${i}" style="cursor:pointer">${badge(t, "s")}<span>${esc(nick(t))}</span><b>${x.heat}</b></div>`).join("")}</div>
       <div><h3>Players</h3>${players.map((x, i) => `<div class="hr" data-hot="players" data-i="${i}" style="cursor:pointer">${badge(x.team, "s")}<span>${esc(x.name.split(" ").slice(-1)[0])}</span><b>${x.heat}</b></div>`).join("")}</div></div>
-    <button class="recline" data-go="results">${wk.length ? `<span><b>${ww}–${wk.length - ww}</b> our picks this week</span><span>${pct(ww / wk.length)} →</span>` : `<span><b>${lk ? pct(lk.acc) : "–"}</b> winners picked over the last 2 seasons</span><span>Results →</span>`}</button>
+    ${trackRecord()}
     <p class="fine">Picks, not promises. Even our strongest picks lose about 1 in 3.</p>`;
 }
 $("v-bets").addEventListener("click", e => {
   if (e.target.closest("a.go")) return;
-  const go = e.target.closest("[data-go]"); if (go) { setView(go.dataset.go, true); return; }
+  const go = e.target.closest("[data-go]"); if (go) { setView(go.dataset.go, true); const an = go.dataset.anchor; if (an) setTimeout(() => { const el = $(an); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 350); return; }
   const al = e.target.closest("[data-addleg]"); if (al) { const g = allGames().find(x => x.id === al.dataset.addleg); if (g) toggleLeg(g, al.dataset.team); return; }
   const sg = e.target.closest("[data-sugg]"); if (sg) { SLIP = sg.dataset.sugg.split(",").map(s2 => { const [gid, team] = s2.split("|"), g = allGames().find(x => x.id === gid); return { gid, date: g.date, away: g.away, home: g.home, team }; }); SLIP_X = ""; saveSlip(); renderBets(); openParlay(); return; }
   const tk = e.target.closest("[data-took]"); if (tk) { openSheet(tk.dataset.took, { bet: true, team: tk.dataset.team }); return; }
@@ -654,6 +661,20 @@ $("v-bets").addEventListener("click", e => {
 });
 $("v-bets").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.dataset && e.target.dataset.gid && (e.target.classList.contains("bet") || e.target.classList.contains("lotd"))) { e.preventDefault(); openSheet(e.target.dataset.gid); } });
 
+/* ---------------- How we've done (home) ----------------
+   Every pick lockski locked before puck drop, graded: all-time record, % right, and the last 12 results as chips.
+   Tapping it opens Graphs at the all-time chart. */
+function trackRecord() {
+  const g = ledgerRows().graded;   // newest first
+  if (!g.length) return `<button class="track" data-go="results"><div class="trh"><span>how we've done</span><span>graphs →</span></div><div class="trb"><b>0–0</b><span>our record starts with today's games. every pick is locked before puck drop and graded after.</span></div></button>`;
+  const w = g.filter(r => r.ok).length, l = g.length - w, strong = g.filter(r => r.p >= .6), sw = strong.filter(r => r.ok).length;
+  const last = g.slice(0, 12).reverse();
+  return `<button class="track" data-go="results" data-anchor="gc-model">
+    <div class="trh"><span>how we've done · all time</span><span>graphs →</span></div>
+    <div class="trb"><b>${w}–${l}</b><span><b style="font-size:15px">${pct(w / g.length)}</b> of our picks right${strong.length ? ` · ${sw}–${strong.length - sw} on 60%+ picks` : ""}</span></div>
+    <div class="chips">${last.map(r => `<i class="${r.ok ? "w" : "l"}" title="${esc(full(r.pick))} ${r.ok ? "won" : "lost"}">${esc(r.pick)}</i>`).join("")}</div>
+  </button>`;
+}
 /* ---------------- Hot ---------------- */
 /* Plain-words reasons for form. Players: compares goals with the chances they actually got (expected goals);
    teams: 5-on-5 shot share and PDO (shooting% + save%, which swings on luck and comes back to earth). */
@@ -829,6 +850,22 @@ function groupProfit(done, keyFn) {
   const m = {}; done.forEach(b => { const k = keyFn(b); if (k == null) return; const g = m[k] || (m[k] = { label: k, v: 0, n: 0, w: 0 }); g.v += b.st.profit; g.n++; if (b.st.won) g.w++; });
   return Object.values(m).sort((a, b) => b.v - a.v);
 }
+function graphPicks() {   // per day: correct picks up (green), wrong picks down (red); line = running % right
+  const g = ledgerRows().graded.slice().reverse(); if (!g.length) return "";
+  const by = {}; g.forEach(r => { const d = by[r.date] || (by[r.date] = { w: 0, l: 0 }); r.ok ? d.w++ : d.l++; });
+  const days = Object.keys(by).sort().slice(-30), W = 340, H = 170, P = 8, mid = 92, unit = Math.min(14, 70 / Math.max(1, ...days.map(d => Math.max(by[d].w, by[d].l))));
+  const slot = (W - 2 * P) / days.length, bw = Math.max(4, Math.min(22, slot - 4));
+  let cw = 0, cn = 0; const pts = days.map((d, i) => { cw += by[d].w; cn += by[d].w + by[d].l; return [P + slot * (i + .5), 14 + (1 - cw / cn) * 50]; });
+  return `<svg class="gph" viewBox="0 0 ${W} ${H}" role="img" aria-label="lockski picks by day, correct vs wrong">
+    <line class="zero" x1="${P}" x2="${W - P}" y1="${mid}" y2="${mid}"/>
+    ${days.map((d, i) => { const cx = P + slot * (i + .5), o = by[d];
+      return `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(mid - o.w * unit).toFixed(1)}" width="${bw.toFixed(1)}" height="${(o.w * unit).toFixed(1)}" rx="3" fill="#22c55e"><title>${d}: ${o.w} right</title></rect>
+        <rect x="${(cx - bw / 2).toFixed(1)}" y="${mid}" width="${bw.toFixed(1)}" height="${(o.l * unit).toFixed(1)}" rx="3" fill="#ef4444" opacity=".85"><title>${d}: ${o.l} wrong</title></rect>`; }).join("")}
+    ${pts.length > 1 ? `<polyline class="ln" points="${pts.map(p => p.map(v => v.toFixed(1)).join(",")).join(" ")}"/>` : ""}
+    <circle class="end" cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="4"/>
+    <text class="ax w" x="${W - P}" y="10" text-anchor="end">${pct(cw / cn)} right</text>
+    <text class="ax" x="${P}" y="${H - 2}">${esc(dayObj(days[0]).toLocaleDateString([], { month: "short", day: "numeric" }))}</text><text class="ax" x="${W - P}" y="${H - 2}" text-anchor="end">${esc(dayObj(days[days.length - 1]).toLocaleDateString([], { month: "short", day: "numeric" }))}</text></svg>`;
+}
 function graphModel() {   // lockski's own picks: running record, and $10 on every pick at sportsbook prices
   const rows = ledgerRows().graded.slice().reverse(); if (rows.length < 3) return "";
   const W = 340, H = 150, P = 8, top = 14, lineH = 104, n = rows.length;
@@ -876,6 +913,7 @@ function renderResults() {
     ${byDow.length >= 2 ? card("profit by day of the week", "", hbars(byDow), "") : ""}`
     : `<div class="empty"><b>your graphs start with your first bet</b><p>go to home or games, tap a game, hit "i took this bet", and type how much you put down. every bet shows up here the moment you save it.</p></div>`}
     ${(() => { const ls = S.model && S.model.ledgerSummary; const vm = ls && ls.vsMarket; return ls && ls.graded >= 10 ? `<div class="gcard dim"><h3>forward test so far <b>${ls.graded} games</b></h3><p class="fine" style="text-align:left;margin:0">these are real pregame calls, graded after the fact. right ${pct(ls.accuracy)} · brier ${ls.brier}${vm ? ` · vs sportsbooks on ${vm.games} games: our brier ${vm.lockskiBrier ?? "–"}, theirs ${vm.marketBrier ?? "–"} (lower is better)` : ""}. small samples swing a lot; judge after a few hundred.</p></div>` : ""; })()}
+    ${(() => { const gg = ledgerRows().graded, ww = gg.filter(r => r.ok).length; return gg.length ? `<div class="gcard" id="gc-model"><h3>lockski's picks, all time <b>${ww}–${gg.length - ww}</b></h3>${graphPicks()}<div class="legend"><span class="lg-g">green = picked right</span><span class="lg-r">red = picked wrong</span><span>line = % right so far</span></div></div>` : `<div class="gcard dim" id="gc-model"><h3>lockski's picks, all time</h3><p class="fine" style="text-align:left;margin:0">the chart starts with the first graded pick.</p></div>`; })()}
     ${model ? card("lockski's picks over time", `${ledgerRows().graded.filter(r => r.ok).length}–${ledgerRows().graded.filter(r => !r.ok).length}`, model, "solid line: our wins minus losses. dashed line: what $10 on every one of our picks at sportsbook prices would have made.") : soon("lockski's picks over time", "shows once we've graded 3 picks.")}`;
 }
 $("v-results").addEventListener("click", e => { const g = e.target.closest("[data-gid]"); if (g) openSheet(g.dataset.gid); });
@@ -1083,7 +1121,7 @@ $("v-mine").addEventListener("click", e => {
   const r = e.target.closest("[data-r]"); if (r) { S.range = r.dataset.r; renderMine(); return; }
   const g = e.target.closest("[data-gid]"); if (g) openSheet(g.dataset.gid);
 });
-$("v-mine").addEventListener("change", e => { if (e.target.id === "unit-in") { const u = Number(e.target.value.replace(/[^0-9.]/g, "")); if (u > 0) { saveUnit(u); renderMine(); } } });
+
 
 /* ---------------- Details sheet ---------------- */
 const FN = { "5-on-5 play": "Better team overall", "Special teams": "Power play and penalty kill", "Home ice": "Playing at home", "Goaltending": "Goalies",
@@ -1174,7 +1212,7 @@ function openSheet(id, opts) {
       <div id="pp-v" style="display:grid;gap:10px">${callHtml(p, m, side, key)}</div>
       <div id="edge-v" style="display:grid">${edgeHtml(p, m, side, key, fav)}</div>
       <div class="pricebox"><label for="pp-in">Different on PrizePicks? Type it</label><input id="pp-in" inputmode="decimal" placeholder="${(estMult(m, side) || minMult(p)).toFixed(2)}" value="${PRICES[key] != null ? esc(PRICES[key]) : ""}"><span>x</span></div>
-      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
+      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
       <div id="legbox" style="display:grid;gap:8px;justify-items:center">${legBox()}</div>
     </div>` : ""}
     ${led && led.result && !myBets.length ? "" : `<div id="betbox">${betBox()}</div>`}
@@ -1414,7 +1452,7 @@ liveFetch().then(ok => { renderFoot(); if (ok) { render(); } });
     db.collection("weeks").onSnapshot(snap => { const w = {}; snap.docs.forEach(d => { if (d.exists) w[d.id] = d.data(); }); if (Object.keys(w).length) { S.weeks = w; render(); } }, fail);
     db.doc("meta/status").onSnapshot(d => { if (d.exists) { S.meta = d.data(); renderFoot(); } }, fail);
     db.doc("model/current").onSnapshot(d => { if (d.exists && d.data().teams) { S.model = d.data(); render(); renderSlipBar(); } }, fail);
-    db.collection("ledger").onSnapshot(snap => { const L = {}; snap.docs.forEach(d => { if (d.exists) L[d.id] = d.data(); }); if (Object.keys(L).length) { S.ledger = L; try { renderResults(); renderMine(); } catch (e) { console.error(e); } } }, fail);
+    db.collection("ledger").onSnapshot(snap => { const L = {}; snap.docs.forEach(d => { if (d.exists) L[d.id] = d.data(); }); if (Object.keys(L).length) { S.ledger = L; try { renderResults(); renderMine(); renderBets(); } catch (e) { console.error(e); } } }, fail);
     db.collection("bets").onSnapshot(snap => { const B = {}; snap.docs.forEach(d => { if (d.exists) B[d.id] = d.data(); }); S.bets = B; try { renderMine(); renderResults(); renderBets(); } catch (e) { console.error(e); } }, fail);
     db.doc("settings/tracker").onSnapshot(d => { if (d.exists && Number(d.data().unit) > 0) { S.unit = Number(d.data().unit); try { renderMine(); } catch {} } }, fail);
   } catch (e) { fail(e); }

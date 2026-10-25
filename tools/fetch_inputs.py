@@ -1,6 +1,6 @@
 """lockski.ai pregame inputs, deterministic (no AI): starting goalies, injuries and sportsbook moneylines.
 
-Runs on GitHub Actions every 20 minutes through the day (see .github/workflows/inputs.yml) and writes
+Runs on GitHub Actions about every 10 minutes, around the clock (see .github/workflows/inputs.yml) and writes
 data/inputs/gameday.json in the shape engine/model.py and engine/market.py already read:
   {"kind", "updatedAt", "source_goalies", "source_injuries", "source_odds",
    "starters": {"YYYY-MM-DD": [[AWY, goalie, "Confirmed"|"Unconfirmed", HOM, goalie, status], ...]},
@@ -152,6 +152,14 @@ def odds(today):
 
 def main():
     kind = sys.argv[1] if len(sys.argv) > 1 else "scheduled"
+    import os
+    try:   # rate limit: one fetch per ~9 minutes unless forced
+        prev = json.loads((INP / "gameday.json").read_text()).get("updatedAt")
+        age = (datetime.now(timezone.utc) - datetime.fromisoformat(prev.replace("Z", "+00:00"))).total_seconds() / 60 if prev else 1e9
+        if age < 9 and os.environ.get("FORCE_INPUTS") != "1":
+            print(f"inputs: fetched {age:.0f} min ago, next fetch in {9 - age:.0f} min"); return
+    except Exception:
+        pass
     today = datetime.now(ET).date(); tomorrow = today + timedelta(days=1)
     days = {today.isoformat(), tomorrow.isoformat()}
     sched = schedule_games()
@@ -177,24 +185,24 @@ def main():
         out["starters"] = starters
         src["goalies"] = {"url": "https://www.dailyfaceoff.com/starting-goalies/", "fetchedAt": now_iso(), "ok": True, "items": n,
                           "confirmed": sum(1 for rs in starters.values() for r in rs for s in (r[2], r[5]) if s == "Confirmed"),
-                          "error": "; ".join(errs) or None, "cadence": "every 20 min, 9am-10pm ET"}
+                          "error": "; ".join(errs) or None, "cadence": "about every 10 min, around the clock"}
         out["source_goalies"] = f"dailyfaceoff.com/starting-goalies (pulled {now_iso()})"
     else:   # keep the old section only while it is still for today/tomorrow
         keep = {d: r for d, r in (old.get("starters") or {}).items() if d in days}
         out["starters"] = keep
         src["goalies"] = {"url": "https://www.dailyfaceoff.com/starting-goalies/", "fetchedAt": now_iso(), "ok": False, "items": sum(map(len, keep.values())),
-                          "error": "; ".join(errs) or "nothing for these dates", "keptPrevious": bool(keep), "cadence": "every 20 min, 9am-10pm ET"}
+                          "error": "; ".join(errs) or "nothing for these dates", "keptPrevious": bool(keep), "cadence": "about every 10 min, around the clock"}
         out["source_goalies"] = old.get("source_goalies") if keep else None
 
     try:
         url, rows = injuries()
         out["injuries"] = rows
-        src["injuries"] = {"url": url, "fetchedAt": now_iso(), "ok": True, "items": len(rows), "error": None, "cadence": "every 20 min, 9am-10pm ET"}
+        src["injuries"] = {"url": url, "fetchedAt": now_iso(), "ok": True, "items": len(rows), "error": None, "cadence": "about every 10 min, around the clock"}
         out["source_injuries"] = f"cbssports.com/nhl/injuries (pulled {now_iso()})"
     except Exception as e:
         out["injuries"] = old.get("injuries") or []
         src["injuries"] = {"url": "https://www.cbssports.com/nhl/injuries/", "fetchedAt": now_iso(), "ok": False, "items": len(out["injuries"]),
-                           "error": str(e), "keptPrevious": bool(out["injuries"]), "cadence": "every 20 min, 9am-10pm ET"}
+                           "error": str(e), "keptPrevious": bool(out["injuries"]), "cadence": "about every 10 min, around the clock"}
         out["source_injuries"] = old.get("source_injuries")
 
     try:
@@ -203,7 +211,7 @@ def main():
         if not lines:
             raise ValueError("no lines matched the schedule")
         out["odds"] = {"date": today.isoformat(), "source": f"{url} {now_iso()}", "lines": lines}
-        src["odds"] = {"url": url, "fetchedAt": now_iso(), "ok": True, "items": len(lines), "error": None, "cadence": "every 20 min, 9am-10pm ET",
+        src["odds"] = {"url": url, "fetchedAt": now_iso(), "ok": True, "items": len(lines), "error": None, "cadence": "about every 10 min, around the clock",
                        "note": "sportsbook moneylines, used as an estimate of PrizePicks prices"}
         out["source_odds"] = f"cbssports.com/nhl/odds (pulled {now_iso()})"
     except Exception as e:
@@ -211,7 +219,7 @@ def main():
         keep = [l for l in oo.get("lines", []) if len(l) >= 5 and l[4] in days] if oo else []
         out["odds"] = {"date": today.isoformat(), "source": oo.get("source"), "lines": keep} if keep else {}
         src["odds"] = {"url": "https://www.cbssports.com/nhl/odds/", "fetchedAt": now_iso(), "ok": False, "items": len(keep), "error": str(e),
-                       "keptPrevious": bool(keep), "cadence": "every 20 min, 9am-10pm ET"}
+                       "keptPrevious": bool(keep), "cadence": "about every 10 min, around the clock"}
         out["source_odds"] = oo.get("source") if keep else None
 
     # validation: every starter / odds row is a scheduled game; no duplicates

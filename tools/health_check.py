@@ -88,10 +88,10 @@ for name in ("goalies", "injuries", "odds"):
     s = src.get(name)
     if not s: put("inputs_" + name, "degraded", "never fetched by the deterministic fetcher yet"); continue
     ag = age_min(s.get("fetchedAt")); daytime = 9 <= ET.hour <= 22 and pending
-    if s.get("ok") and ag is not None and ag <= (40 if daytime else 24 * 60):
+    if s.get("ok") and ag is not None and ag <= 30:
         put("inputs_" + name, "healthy", f"{s.get('items', 0)} items, fetched {ag:.0f} min ago" + (f", {s.get('confirmed')} confirmed" if name == "goalies" else ""), ageMin=round(ag))
     elif s.get("ok") and not daytime:
-        put("inputs_" + name, "healthy", f"{s.get('items', 0)} items (last fetched {ag / 60:.1f} h ago; refreshes 9am-10pm ET)", ageMin=round(ag or 0))
+        put("inputs_" + name, "healthy", f"{s.get('items', 0)} items (last fetched {ag / 60:.1f} h ago)", ageMin=round(ag or 0))
     else:
         put("inputs_" + name, "degraded", f"last fetch failed or stale ({s.get('error') or f'{ag:.0f} min old'})" + (", previous kept" if s.get("keptPrevious") else ""), ageMin=round(ag or 0))
 

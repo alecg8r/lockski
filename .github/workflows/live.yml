@@ -1,6 +1,6 @@
 name: live
 # lockski.ai live engine, around the clock. Every 10 minutes GitHub starts a run; each run does up to 3 cycles
-# ~3 minutes apart (so a skipped or late cron still leaves no long gap). A cycle: pregame inputs (9am-10pm ET),
+# ~3 minutes apart (so a skipped or late cron still leaves no long gap). A cycle: pregame inputs (goalies/injuries/odds, ~every 10 min, 24/7),
 # grade finals from the NHL feed, score every shot from the play-by-play, rerun the model, validate, publish data/.
 # The app reads data/ straight from GitHub, so none of this redeploys the site.
 on:
@@ -8,7 +8,7 @@ on:
     - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
-      force_inputs: { description: "fetch goalies/injuries/odds even outside 9am-10pm ET", type: boolean, default: false }
+      force_inputs: { description: "fetch goalies/injuries/odds now, skipping the 9-minute wait", type: boolean, default: false }
 permissions:
   contents: write
 concurrency:

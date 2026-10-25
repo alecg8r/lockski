@@ -1,0 +1,11 @@
+name: probe-sources
+on: { workflow_dispatch: {} }
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/probe_sources.py
+      - uses: actions/upload-artifact@v4
+        with: { name: probe, path: probe_*, retention-days: 1 }

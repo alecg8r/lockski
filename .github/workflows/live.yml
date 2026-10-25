@@ -1,23 +1,22 @@
 name: live
-# lockski.ai live engine, around the clock. Every 10 minutes GitHub starts a run; each run does up to 3 cycles
-# ~3 minutes apart (so a skipped or late cron still leaves no long gap). A cycle: pregame inputs (goalies/injuries/odds, ~every 10 min, 24/7),
-# grade finals from the NHL feed, score every shot from the play-by-play, rerun the model, validate, publish data/.
-# The app reads data/ straight from GitHub, so none of this redeploys the site.
+# lockski.ai live engine, around the clock. Each run does a cycle about every 3 minutes for ~25 minutes, then starts
+# the next run itself, so it never depends on GitHub's best-effort cron (kept only as a backup restart).
+# A cycle: goalies/injuries/odds (at most every 9 min) -> grade finals from the NHL feed -> score every shot from the
+# play-by-play -> rerun the model -> validate -> publish data/. The app reads data/ from GitHub: no site redeploys.
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
-    inputs:
-      force_inputs: { description: "fetch goalies/injuries/odds now, skipping the 9-minute wait", type: boolean, default: false }
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: data-publish
   cancel-in-progress: false
 jobs:
   live:
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,13 +24,17 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -q -r engine/requirements.txt
-      - name: cycles
-        env: { FORCE_INPUTS: "${{ inputs.force_inputs && '1' || '' }}" }
+      - name: cycles (~25 min)
         run: |
-          rc=0
-          for i in 1 2 3; do
-            echo "=== cycle $i $(date -u +%T) ==="
-            bash tools/cycle.sh || rc=1
-            [ $i -lt 3 ] && sleep 170
+          end=$(( $(date +%s) + 25*60 )); i=0; fails=0
+          while [ $(date +%s) -lt $end ]; do
+            i=$((i+1)); echo "=== cycle $i $(date -u +%T) ==="
+            bash tools/cycle.sh || fails=$((fails+1))
+            sleep 150
           done
-          exit $rc
+          echo "cycles: $i, with failures: $fails"
+          [ $fails -lt $i ]   # the job fails only if every cycle failed
+      - name: start the next run
+        if: always()
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh workflow run live.yml --ref main

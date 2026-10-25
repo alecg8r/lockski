@@ -5,7 +5,8 @@ market's win probability. PrizePicks has no public price feed reachable from the
 reads sportsbook moneylines (CBS Sports odds page) and converts them to a no-vig probability: the
 estimated fair market price. Typed PrizePicks prices in the app always override the estimate.
 
-gameday.json may carry: "odds": {"date": "YYYY-MM-DD", "source": "...", "lines": [[AWY, awayML, HOM, homeML], ...]}
+gameday.json may carry: "odds": {"date": "YYYY-MM-DD", "source": "...", "lines": [[AWY, awayML, HOM, homeML(, date)], ...]}
+A line's own 5th value (game date) wins over odds.date, so one file can price today's and tomorrow's games.
 """
 
 
@@ -37,10 +38,11 @@ def attach(model, weeks, gameday):
     n = 0
     for row in lines:
         try:
-            away, aml, home, hml = row
-        except (TypeError, ValueError):
+            away, aml, home, hml = row[:4]
+            rdate = row[4] if len(row) > 4 and row[4] else date
+        except (TypeError, ValueError, IndexError):
             continue
-        gid = ids.get((date, away, home))
+        gid = ids.get((rdate, away, home))
         g = model.get("games", {}).get(gid)
         if not g or not valid_pair(aml, hml):
             continue

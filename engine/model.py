@@ -305,8 +305,11 @@ def parse_return(text, season_start=date(2026, 7, 1)):
 
 def out_prob(status, gdate):
     """Probability a listed player misses a game on gdate."""
-    if "Day-to-Day" in status:
-        return 0.5 if gdate <= date(2026, 10, 26) else 0.0
+    s = status.lower()
+    if "day-to-day" in s or "day to day" in s:
+        return 0.5 if gdate <= date.today() + timedelta(days=2) else 0.0   # listed day-to-day: coin flip for the next couple of days
+    if "out for the season" in s or "out for season" in s or "season-ending" in s:
+        return 1.0
     ret = parse_return(status)
     if ret is None:
         return 0.5
@@ -574,7 +577,7 @@ for i, t in enumerate(sorted(out_teams, key=lambda t: -out_teams[t]["rating"]), 
 
 model = {
     "version": "v0.6", "newGamesApplied": len(inc_games), "recentFormTeams": len(recent_used), "boxScoreCorsiTeamGames": corsi_used[0], "pbpShotQualityTeamGames": pbp_used[0],
-    "dataThrough": "2026-27 to date (8-12 GP) + 2025-26 prior; goalies & injuries as of Oct 24, 2026 3:20 AM ET",
+    "dataThrough": f"2026-27 to date + 2025-26 prior; goalies: {gd.get('source_goalies') or 'none'}; injuries: {gd.get('source_injuries') or 'none'}",
     "assumptions": {
         "blend5v5": {"xG": W_XG, "corsi": W_CORSI, "fenwick": W_FENWICK, "goals": W_GOALS}, "priorCoef": PRIOR_COEF, "goalieK": K_GOALIE_XGA,
         "stPriorCarry": ST_PRIOR_CARRY, "kGames": K_GAMES,

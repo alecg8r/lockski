@@ -73,6 +73,10 @@ def record_forecasts(ledger, weeks, model, now=None, channel="production", input
                 continue                                   # identical forecast: nothing new
             doc[key].append(snap)
             if channel == "production":
+                prev = doc.get("official") or {}
+                if snap["market"] is None and prev.get("market") is not None:
+                    # the price feed dropped out: keep the last price seen before puck drop, never lose it
+                    snap["market"], snap["marketML"], snap["marketAsOf"] = prev["market"], prev.get("marketML"), prev.get("marketAsOf") or prev.get("at")
                 doc["official"] = snap
             doc["startUTC"] = g["startUTC"]                # schedule time can move before puck drop
             ledger[g["id"]] = doc

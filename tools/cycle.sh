@@ -18,7 +18,7 @@ if ! python3 tools/validate_data.py; then
 fi
 if [ -n "$(git status --porcelain data/)" ]; then
   git config user.name lockski; git config user.email lockski@users.noreply.github.com
-  git add data/ && git commit -q -m "live $(date -u +%FT%TZ)${FAILED:+ (failed:$FAILED)}"
+  git add data/ && git commit -q -m "live $(date -u +%FT%TZ)${FAILED:+ (failed:$FAILED)} [skip netlify]"
   for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin main && break; sleep 5; done
 else echo "no change"; fi
 [ -z "$FAILED" ]

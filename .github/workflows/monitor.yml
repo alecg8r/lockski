@@ -23,7 +23,7 @@ jobs:
           python3 tools/health_check.py; rc=$?
           if [ -n "$(git status --porcelain data/health.json)" ]; then
             git config user.name lockski; git config user.email lockski@users.noreply.github.com
-            git add data/health.json && git commit -q -m "health $(date -u +%FT%TZ)"
+            git add data/health.json && git commit -q -m "health $(date -u +%FT%TZ) [skip netlify]"
             for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin main && break; sleep 5; done
           fi
           exit $rc

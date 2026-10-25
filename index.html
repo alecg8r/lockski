@@ -1377,9 +1377,12 @@ liveFetch().then(ok => { renderFoot(); if (ok) { render(); } });
   setInterval(() => { if (!document.hidden) db.loadFiles().catch(() => {}); }, 2 * 60 * 1000);
   setInterval(() => { if (!document.hidden && BETS_MODE === "api") db.loadBets().catch(() => {}); }, 30 * 1000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { db.loadFiles().catch(() => {}); if (BETS_MODE === "api") db.loadBets().catch(() => {}); } });
-  // first run on a new site: bring over the bets from the Claude app once (data/bets-seed.json), never twice
-  try { if (!betsList().length && !localStorage.getItem("lk-seeded")) { const seed = await fetchJSON("data/bets-seed.json").catch(() => null);
-    if (seed && seed.bets) { for (const b of Object.values(seed.bets)) { try { await saveBet(b); } catch {} } localStorage.setItem("lk-seeded", "1"); renderMine(); renderBets(); renderResults(); } } } catch {}
+  // bring over any bets placed in the Claude app (data/bets-seed.json). Adds only bets that aren't here yet
+  // (same bet, same time), so it's safe to run on every device and every new seed version.
+  try { const seed = await fetchJSON("data/bets-seed.json").catch(() => null);
+    if (seed && seed.bets && localStorage.getItem("lk-seeded") !== String(seed.v || 1)) { let added = 0;
+      for (const b of Object.values(seed.bets)) { if (betsList().some(x => sameBet(b, x) && x.at === b.at)) continue; try { await saveBet(b); added++; } catch {} }
+      localStorage.setItem("lk-seeded", String(seed.v || 1)); if (added) { toast(`<b>synced.</b> ${added} bet${added > 1 ? "s" : ""} from the claude app added.`, 5000); renderMine(); renderBets(); renderResults(); } } } catch {}
 })();
 setInterval(() => { try { if (S.view === "games") renderGames(); if (S.view === "mine") renderMine(); if (S.view === "results") renderResults(); } catch {} }, 60000);
 </script>

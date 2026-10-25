@@ -438,9 +438,16 @@ function picks() {   // the model's side for every upcoming game in the next 7 d
     return { g, m, side, team: home ? g.home : g.away, opp: home ? g.away : g.home, p: home ? m.pHome : m.pAway, atHome: home, mk };
   });
 }
-function bestBets() {   // best value: picks the model would take (positive expected profit at the known multiplier), biggest first
-  return picks().map(B => { const c = callFor(B); return { ...B, c, ev: c && c.d && (c.d.k === "take" || c.d.k === "news") ? B.p * c.mu.x - 1 : null }; })
-    .filter(B => B.ev != null && B.ev > 0).sort((a, b) => b.ev - a.ev).slice(0, 6);
+/* Best bets for the next 7 days, always ready.
+   - Games with a price (today, or any multiplier you typed): only the ones worth taking, ranked by expected profit per $10.
+     Priced games that don't pay enough are left out on purpose.
+   - Games whose price isn't out yet: our strongest picks by chance to win, each showing the multiplier that makes it worth it.
+     When the sportsbooks post a line (each morning and evening run), the card switches to a real take/skip call on its own. */
+function bestBets() {
+  const all = picks().map(B => { const c = callFor(B); return { ...B, c, priced: !!(c && c.d), ev: c && c.d && (c.d.k === "take" || c.d.k === "news") ? B.p * c.mu.x - 1 : null }; });
+  const value = all.filter(B => B.ev != null && B.ev > 0).sort((a, b) => b.ev - a.ev);
+  const early = all.filter(B => !B.priced && B.p >= 0.56).sort((a, b) => b.p - a.p);
+  return [...value.slice(0, 4), ...early].slice(0, 8);
 }
 
 /* ---------------- Parlays (straight team-to-win picks only) ----------------
@@ -562,7 +569,7 @@ function betCard(B) {
     <div class="lab"><span class="hd">Take this bet</span><button class="plus${inSlip(B.g.id, B.team) ? " in" : ""}" data-addleg="${esc(B.g.id)}" data-team="${esc(B.team)}" aria-label="${inSlip(B.g.id, B.team) ? "Remove from" : "Add to"} parlay">${inSlip(B.g.id, B.team) ? "✓" : "+"}</button></div>
     <div class="row">${badge(B.team)}<div class="pc"><b>${pct(B.p)}</b><small>to win</small></div></div>
     <div><div class="tm">${esc(nick(B.team))}</div><div class="gm">${B.atHome ? "vs" : "at"} ${esc(nick(B.opp))}<br>${esc(whenTxt(B.g))}</div>
-      ${c && c.d ? `<div style="margin-top:7px"><span class="pill ${c.d.k}">${esc(c.d.pill)}</span></div>` : ""}</div>
+      ${c && c.d ? `<div style="margin-top:7px"><span class="pill ${c.d.k}">${esc(c.d.pill)}</span></div>` : `<div style="margin-top:7px"><span class="pill">worth it at ${fmtX(minMult(B.p))}+</span></div>`}</div>
     <a class="go" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
   </article>`;
 }
@@ -607,9 +614,9 @@ function renderBets() {
     <div class="hello"><div><div class="d">${esc(dayObj(today).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }))}</div><h1>${todays.length ? `${todays.length} game${todays.length > 1 ? "s" : ""} today` : "No games today"}</h1></div></div>
     ${staleHtml()}
     ${L ? lockCard(L) : ""}
-    <div class="sh"><h2>Best value</h2><button data-go="games">Next 7 days</button></div>
-    ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">biggest expected profit per $10 first. the lock above is the most likely winner; these are the best prices. not the same thing.</p>`
-      : `<div class="empty"><b>nothing worth betting right now</b><p>no pick beats its price by enough today. that's a normal day, not a broken app. check back after the evening update.</p></div>`}
+    <div class="sh"><h2>Best bets this week</h2><button data-go="games">Next 7 days</button></div>
+    ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">priced games first, biggest expected profit per $10. later games show the multiplier that makes them worth it and update on their own as prices post.</p>`
+      : `<div class="empty"><b>no strong picks in the next 7 days</b><p>none of the upcoming games clear our bar yet. this updates on its own as goalies, injuries and prices come in.</p></div>`}
     ${""/* Best parlay of the day removed after backtest: suggested parlays lost 40% of stakes in 2025-26 */}
     ${upcoming.length ? `<div class="sh"><h2>${todays.length ? "Today's games" : "Next games"}</h2><button data-go="games">See all</button></div>
       <div class="list">${upcoming.slice(0, 6).map(g => { const m = S.model.games[g.id] || {}, pa = m.pAway ?? .5, ph = m.pHome ?? .5;

@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 step() { local name=$1; shift; if "$@"; then echo "::notice::$name ok"; else echo "::warning::$name failed"; FAILED="$FAILED $name"; fi; }
 FAILED=""
 H=$(TZ=America/New_York date +%H)
-if [ "$H" -ge 9 ] && [ "$H" -le 22 ]; then step inputs python3 tools/fetch_inputs.py scheduled; else echo "inputs: outside 9am-10pm ET, skipped"; fi
+if [ "${FORCE_INPUTS:-}" = "1" ] || { [ "$H" -ge 9 ] && [ "$H" -le 22 ]; }; then step inputs python3 tools/fetch_inputs.py scheduled; else echo "inputs: outside 9am-10pm ET, skipped"; fi
 step settle python3 tools/settle_live.py
 step shotquality python3 tools/xg_nightly.py
 step engine python3 tools/live_engine.py

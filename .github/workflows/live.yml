@@ -7,6 +7,8 @@ on:
   schedule:
     - cron: "*/10 * * * *"
   workflow_dispatch:
+    inputs:
+      force_inputs: { description: "fetch goalies/injuries/odds even outside 9am-10pm ET", type: boolean, default: false }
 permissions:
   contents: write
 concurrency:
@@ -24,6 +26,7 @@ jobs:
           cache: pip
       - run: pip install -q -r engine/requirements.txt
       - name: cycles
+        env: { FORCE_INPUTS: "${{ inputs.force_inputs && '1' || '' }}" }
         run: |
           rc=0
           for i in 1 2 3; do

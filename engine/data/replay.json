@@ -1,0 +1,196 @@
+{
+ "generated": "2026-10-24T15:33:34.026653+00:00",
+ "label": "Historical replay (not live forecasts)",
+ "testSeasons": "2024-25 and 2025-26",
+ "games": 2624,
+ "method": "Walk-forward. Weights fit through 2021-22; settings and calibration tuned on 2022-24; tested on 2024-26 only.",
+ "limits": [
+  "No injuries, rest or travel in the replay",
+  "Fenwick stands in for Corsi",
+  "Recent form uses full shot data; live it uses box-score shots until a 2026 shot file is loaded",
+  "Uses the goalie who actually started",
+  "Betting-market comparison covers 2025-26 only (one season)"
+ ],
+ "elo": {
+  "K": 8,
+  "homeAdv": 20,
+  "carry": 0.8
+ },
+ "models": {
+  "Lockski (production settings)": {
+   "acc": 0.5686,
+   "accCI": [
+    0.5492,
+    0.5877
+   ],
+   "logLoss": 0.6746,
+   "logLossCI": [
+    0.6676,
+    0.6819
+   ],
+   "brier": 0.2409
+  },
+  "Elo ratings": {
+   "acc": 0.5522,
+   "accCI": [
+    0.5332,
+    0.5701
+   ],
+   "logLoss": 0.6802,
+   "logLossCI": [
+    0.6729,
+    0.6881
+   ],
+   "brier": 0.2437,
+   "lockskiLogLossBetterBy": 0.0057,
+   "shareOfResamplesLockskiBetter": 0.994
+  },
+  "Always pick home": {
+   "acc": 0.5419,
+   "accCI": [
+    0.5229,
+    0.561
+   ],
+   "logLoss": 0.6898,
+   "logLossCI": [
+    0.6872,
+    0.6923
+   ],
+   "brier": 0.2483,
+   "lockskiLogLossBetterBy": 0.0151,
+   "shareOfResamplesLockskiBetter": 1.0
+  }
+ },
+ "bands": [
+  {
+   "label": "50\u201355%",
+   "n": 1008,
+   "predicted": 0.5239,
+   "actual": 0.5268
+  },
+  {
+   "label": "55\u201360%",
+   "n": 803,
+   "predicted": 0.5736,
+   "actual": 0.5318
+  },
+  {
+   "label": "60\u201365%",
+   "n": 510,
+   "predicted": 0.6213,
+   "actual": 0.6333
+  },
+  {
+   "label": "65\u201370%",
+   "n": 223,
+   "predicted": 0.6718,
+   "actual": 0.6547
+  },
+  {
+   "label": "70%+",
+   "n": 80,
+   "predicted": 0.7261,
+   "actual": 0.8125
+  }
+ ],
+ "thresholds": [
+  {
+   "min": 0.55,
+   "n": 1616,
+   "hitRate": 0.5947,
+   "ci": [
+    0.5705,
+    0.6184
+   ],
+   "avgPredicted": 0.6098
+  },
+  {
+   "min": 0.6,
+   "n": 813,
+   "hitRate": 0.6568,
+   "ci": [
+    0.6235,
+    0.6887
+   ],
+   "avgPredicted": 0.6455
+  },
+  {
+   "min": 0.65,
+   "n": 303,
+   "hitRate": 0.6964,
+   "ci": [
+    0.6424,
+    0.7454
+   ],
+   "avgPredicted": 0.6861
+  },
+  {
+   "min": 0.7,
+   "n": 80,
+   "hitRate": 0.8125,
+   "ci": [
+    0.7134,
+    0.8829
+   ],
+   "avgPredicted": 0.7261
+  }
+ ],
+ "bySeason": [
+  {
+   "season": "2024-25",
+   "n": 1312,
+   "acc": 0.5823,
+   "logLoss": 0.6656
+  },
+  {
+   "season": "2025-26",
+   "n": 1312,
+   "acc": 0.5549,
+   "logLoss": 0.6835
+  }
+ ],
+ "market": {
+  "season": "2025-26",
+  "games": 1309,
+  "source": "Scottfree Sports closing moneylines (free sample)",
+  "summary": "2025-26 regular season, 1,309 games, closing moneylines with the bookmaker's cut removed. Picking winners it's a tie; the market is slightly sharper on probabilities. Flat 1-unit bets at the closing price by how far Lockski was above the market:",
+  "lockski": {
+   "acc": 0.5554,
+   "logLoss": 0.6837
+  },
+  "market": {
+   "acc": 0.5561,
+   "logLoss": 0.6819
+  },
+  "gaps": [
+   {
+    "label": "0\u20132 pts above",
+    "bets": 388,
+    "roi": 0.022
+   },
+   {
+    "label": "2\u20134 pts above",
+    "bets": 366,
+    "roi": 0.099
+   },
+   {
+    "label": "4\u20136 pts above",
+    "bets": 238,
+    "roi": 0.056
+   },
+   {
+    "label": "6+ pts above",
+    "bets": 317,
+    "roi": -0.026
+   }
+  ],
+  "locks60": {
+   "n": 351,
+   "hit": 0.6268,
+   "marketExpectedHit": 0.6291,
+   "units": -14.1,
+   "roi": -0.0402
+  },
+  "note": "One season only; the betting results are within normal luck. Bigger gaps did worse."
+ }
+}

@@ -1,0 +1,38 @@
+name: live
+# lockski.ai live engine, around the clock: every 10 minutes it grades finished games, scores every shot from the
+# NHL play-by-play, pulls schedule and box scores, reruns the model and publishes data/ (the app reads it straight
+# from GitHub, so no site deploy is needed). Also runs the moment new goalies/injuries/odds land in data/inputs.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  push:
+    branches: [main]
+    paths: ["data/inputs/gameday.json"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: live
+  cancel-in-progress: false
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -q -r requirements.txt
+      - run: python3 tools/settle_live.py
+      - run: python3 tools/xg_nightly.py
+      - run: python3 tools/live_engine.py
+      - name: publish
+        run: |
+          if [ -z "$(git status --porcelain data/)" ]; then echo "no change"; exit 0; fi
+          git config user.name "lockski"
+          git config user.email "lockski@users.noreply.github.com"
+          git add data/
+          git commit -q -m "live $(date -u +%FT%TZ)"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin main && break; sleep 5; done

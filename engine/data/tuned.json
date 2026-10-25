@@ -1,0 +1,17 @@
+{
+ "K": 8,
+ "w": [
+  0.4,
+  0.4,
+  0.2
+ ],
+ "goalie_cap": 0.1,
+ "home_target": 0.535,
+ "st_carry": 0.7,
+ "test_acc": 0.5686,
+ "test_logloss": 0.6755,
+ "stretch": [
+  1.2345,
+  -0.0403
+ ]
+}

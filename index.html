@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>lockski.ai</title>
-<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski.ai">
+<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=2"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski.ai">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap">
@@ -889,6 +889,9 @@ $("v-results").addEventListener("click", e => { const g = e.target.closest("[dat
 let DB = null;
 /* Netlify build: the page talks to files and a tiny API instead of the Claude database.
    data/*.json are rewritten by the refresh runs; /api/bets keeps your bets in Netlify Blobs (one JSON document). */
+// Live data comes straight from the GitHub repo (updated every 10 minutes by the live engine), so data updates never
+// need a site deploy. Falls back to the copy deployed with the site if GitHub can't be reached.
+const DATA_BASE = "https://raw.githubusercontent.com/alecg8r/lockski/main/";
 const DATA_FILES = { weeks: "data/weeks.json", ledger: "data/ledger.json", model: "data/model.json", meta: "data/meta.json" };
 const API = "/api/bets";
 let PIN = ""; try { PIN = localStorage.getItem("lk-pin") || ""; } catch {}
@@ -898,7 +901,10 @@ async function apiCall(method, body) {
   if (!r.ok) throw new Error("api " + r.status);
   return r.json();
 }
-async function fetchJSON(url) { const r = await fetch(url + "?t=" + Math.floor(Date.now() / 60000), { cache: "no-store" }); if (!r.ok) throw new Error(url + " " + r.status); return r.json(); }
+async function fetchJSON(url) {
+  const bust = "?t=" + Math.floor(Date.now() / 60000);
+  if (url.startsWith("data/") && !url.includes("bets-seed")) { try { const r = await fetch(DATA_BASE + url + bust, { cache: "no-store" }); if (r.ok) return r.json(); } catch {} }
+  const r = await fetch(url + bust, { cache: "no-store" }); if (!r.ok) throw new Error(url + " " + r.status); return r.json(); }
 function makeStore() {
   const subs = { weeks: [], ledger: [], bets: [], "meta/status": [], "model/current": [], "settings/tracker": [] };
   const cur = { weeks: {}, ledger: {}, bets: {}, meta: null, model: null, settings: null };
@@ -1412,7 +1418,7 @@ liveFetch().then(ok => { renderFoot(); if (ok) { render(); } });
     db.collection("bets").onSnapshot(snap => { const B = {}; snap.docs.forEach(d => { if (d.exists) B[d.id] = d.data(); }); S.bets = B; try { renderMine(); renderResults(); renderBets(); } catch (e) { console.error(e); } }, fail);
     db.doc("settings/tracker").onSnapshot(d => { if (d.exists && Number(d.data().unit) > 0) { S.unit = Number(d.data().unit); try { renderMine(); } catch {} } }, fail);
   } catch (e) { fail(e); }
-  setInterval(() => { if (!document.hidden) db.loadFiles().catch(() => {}); }, 2 * 60 * 1000);
+  setInterval(() => { if (!document.hidden) db.loadFiles().catch(() => {}); }, 60 * 1000);
   setInterval(() => { if (!document.hidden && BETS_MODE === "api") db.loadBets().catch(() => {}); }, 30 * 1000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { db.loadFiles().catch(() => {}); if (BETS_MODE === "api") db.loadBets().catch(() => {}); } });
   // bring over any bets placed in the Claude app (data/bets-seed.json). Adds only bets that aren't here yet

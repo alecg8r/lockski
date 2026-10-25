@@ -1,6 +1,9 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  # Each deploy costs Netlify credits, so only app changes deploy. Data, engine and automation changes are skipped
+  # (the app reads live data straight from GitHub). Exit code 0 = skip this build.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)data' ':(exclude)engine' ':(exclude)tools' ':(exclude).github' ':(exclude)README.md'"
 
 [[headers]]
   for = "/data/*"

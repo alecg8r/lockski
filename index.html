@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>lockski.ai</title>
-<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=2"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski.ai">
+<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski.ai">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap">
@@ -194,6 +194,11 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .pill { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
 .pill.take { background: var(--fg); color: #000; border-color: var(--fg); } .pill.wait, .pill.news { color: var(--fg); border-color: var(--fg); }
 .hrow.up { grid-template-columns: 30px minmax(0, 1fr) auto; }
+.hrow.won { border-color: rgba(34,197,94,.55); background: linear-gradient(90deg, rgba(34,197,94,.16), rgba(34,197,94,.03) 70%), var(--card); }
+.hrow.won .pk b { color: #4ade80; }
+.hrow.lost { border-color: rgba(239,68,68,.5); background: linear-gradient(90deg, rgba(239,68,68,.15), rgba(239,68,68,.03) 70%), var(--card); }
+.hrow.lost .pk b { color: #f87171 !important; }
+.mybet.won { border-color: #22c55e; background: rgba(34,197,94,.08); } .mybet.lost { border-color: #ef4444; background: rgba(239,68,68,.08); }
 /* My bets */
 #betbox { display: grid; gap: 10px; }
 .took { appearance: none; width: 100%; height: 48px; border-radius: 14px; border: 1.5px solid var(--fg); background: transparent; color: var(--fg); font-weight: 700; font-size: 15px; cursor: pointer; }
@@ -601,7 +606,6 @@ function renderBets() {
   v.innerHTML = `
     <div class="hello"><div><div class="d">${esc(dayObj(today).toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }))}</div><h1>${todays.length ? `${todays.length} game${todays.length > 1 ? "s" : ""} today` : "No games today"}</h1></div></div>
     ${staleHtml()}
-    ${moneyCard()}
     ${L ? lockCard(L) : ""}
     <div class="sh"><h2>Best value</h2><button data-go="games">Next 7 days</button></div>
     ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">biggest expected profit per $10 first. the lock above is the most likely winner; these are the best prices. not the same thing.</p>`
@@ -990,8 +994,8 @@ function renderMine() {
   const w = done.filter(b => b.st.won).length;
   const pl = done.filter(b => b.type === "parlay");
   const split = k => { const s = done.filter(b => !!b.ourPick === k); return s.length ? `${s.filter(b => b.st.won).length}–${s.filter(b => !b.st.won).length}, ${money(s.reduce((a, b) => a + b.st.profit, 0), true)}` : "none yet"; };
-  const row = b => b.type === "parlay" ? `<button class="hrow up" data-gid="${esc(b.legs[0].gid)}"><span class="stack">${b.legs.slice(0, 2).map(l => badge(l.team, "s")).join("")}</span><span class="g">${money(b.stake)} parlay at ${fmtX(b.mult)}<small>${esc(betLabel(b))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`
-    : `<button class="hrow up" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`;
+  const row = b => b.type === "parlay" ? `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.legs[0].gid)}"><span class="stack">${b.legs.slice(0, 2).map(l => badge(l.team, "s")).join("")}</span><span class="g">${money(b.stake)} parlay at ${fmtX(b.mult)}<small>${esc(betLabel(b))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`
+    : `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`;
   v.innerHTML = `
     <div><h1>My bets</h1><p class="sub">Tap any game, then "I took this bet". Wins and losses fill in on their own.</p></div>
     ${all.length ? `
@@ -1008,7 +1012,7 @@ function renderMine() {
     : `<div class="empty"><b>No bets yet</b><p>Tap a game, hit "I took this bet", and type how much you put down. Your profit graph starts here.</p></div>`}
     <label class="unitrow"><span>My unit size</span><span>$ <input id="unit-in" inputmode="decimal" value="${S.unit}"></span></label>
     <button class="linkbtn" data-backup="1" style="justify-self:center">back up or restore my bets</button>
-    <p class="fine">Scores come in each morning, so a bet shows won or lost the morning after the game.</p>`;
+    <p class="fine">bets settle on their own minutes after the final horn.</p>`;
 }
 function openBackup() {   // copy-out / paste-in of the bet list. restoring only adds bets that aren't already there.
   const txt = JSON.stringify({ lockski: "bets", exported: new Date().toISOString(), unit: S.unit, bets: betsList().map(({ id, ...b }) => b) }, null, 1);
@@ -1078,13 +1082,14 @@ function openSheet(id, opts) {
   const multFor2 = t => { const sd = t === g.home ? "home" : "away", k = g.id + ":" + sd, mu = multFor(m, sd, k); return mu ? mu.x : null; };
   function betBox() {
     const mine = myBets.map(b => { const st = betStatus(b);
-      return `<div class="mybet"><div class="top2"><span>Your bet</span><span>${st.k === "won" ? "Won ✓" : st.k === "lost" ? "Lost" : st.k === "void" ? "Called off" : esc(st.label)}</span></div>
+      return `<div class="mybet ${st.k === "won" || st.k === "lost" ? st.k : ""}"><div class="top2"><span>Your bet</span><span>${st.k === "won" ? "Won ✓" : st.k === "lost" ? "Lost" : st.k === "void" ? "Called off" : esc(st.label)}</span></div>
         <div class="main">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}</div>
         <div class="st">${st.k === "won" ? `Paid back <b>${money(b.stake * b.mult)}</b> (${money(st.profit, true)})` : st.k === "lost" ? `Lost <b>${money(b.stake)}</b>` : st.k === "void" ? `<b>${money(b.stake)}</b> returned` : `If it wins: <b>${money(b.stake * b.mult)}</b> back (${money(b.stake * (b.mult - 1), true)})`}</div>
         <button class="linkbtn" data-del="${esc(b.id)}">Remove this bet</button></div>`; }).join("");
     if (led && led.result) return mine;
-    if (scoreOnly) return mine;
-    if (started && !myBets.length && !form.open) return `<div class="mybet" style="border-color:var(--line)"><div class="top2"><span>your bet</span></div><div class="main" style="color:var(--muted)">no bet placed</div><button class="linkbtn" data-took="1">i did bet this, add it</button></div>`;
+    const goSlip = `<button class="took" data-slip="1">${myBets.length ? "add another bet in my bets" : "bet this game in my bets"} →</button>`;
+    if (scoreOnly) return mine + (led && led.result ? "" : goSlip);
+    if (started && !myBets.length && !form.open) return `<div class="mybet" style="border-color:var(--line)"><div class="top2"><span>your bet</span></div><div class="main" style="color:var(--muted)">no bet placed</div></div>` + goSlip;
     if (!form.open) return mine + `<button class="took" data-took="1">${myBets.length ? "I took another bet" : "I took this bet"}</button>`;
     const x = form.mult ?? multFor2(form.team) ?? "";
     return mine + `<div class="betform box">
@@ -1134,7 +1139,7 @@ function openSheet(id, opts) {
       <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer">Bet on PrizePicks ${ppIcon}</a>
       <div id="legbox" style="display:grid;gap:8px;justify-items:center">${legBox()}</div>
     </div>` : ""}
-    ${(led && led.result && !myBets.length) || (scoreOnly && !myBets.length) ? "" : `<div id="betbox">${betBox()}</div>`}
+    ${led && led.result && !myBets.length ? "" : `<div id="betbox">${betBox()}</div>`}
     ${fac ? `<h3 class="sec">Why we like ${esc(nick(fav))}</h3><div class="why">${fac}</div>` : ""}
     ${m ? `<p class="m" style="margin:0;color:var(--muted);font-size:13.5px">Score guess: ${esc(nick(g.away))} ${m.xgAway.toFixed(1)}, ${esc(nick(g.home))} ${m.xgHome.toFixed(1)}</p>` : ""}
     <div class="kv">
@@ -1153,6 +1158,7 @@ function openSheet(id, opts) {
     payLine();
     if (form.open) setTimeout(() => { bb.scrollIntoView({ block: "center" }); const i = $("bt-stake"); if (i) i.focus({ preventScroll: true }); }, 60);
     bb.addEventListener("click", async e => {
+      if (e.target.closest("[data-slip]")) { closeSheet(); setView("mine", true); setTimeout(() => openSheet(g.id, { bet: true }), 250); return; }
       if (e.target.closest("[data-took]")) { form.open = true; drawBet(); const i = $("bt-stake"); if (i) i.focus(); return; }
       if (e.target.closest("[data-cancel]")) { form.open = false; drawBet(); return; }
       const t = e.target.closest("[data-team]"); if (t) { form.stake = Number($("bt-stake").value) || form.stake; form.team = t.dataset.team; form.mult = null; drawBet(); return; }

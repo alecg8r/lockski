@@ -108,7 +108,7 @@ try:
     rl = json.loads(r.stdout or "[]"); done = [x for x in rl if x["status"] == "completed"]
     if not done: put("actions", "degraded", "no completed live runs found")
     else:
-        la = age_min(done[0]["createdAt"]); bad = sum(1 for x in done if x["conclusion"] != "success")
+        la = age_min(done[0]["createdAt"]); bad = sum(1 for x in done if x["conclusion"] not in ("success", "cancelled", "skipped"))
         put("actions", "healthy" if la <= 30 and bad == 0 else "degraded" if la <= 120 else "offline", f"last live run {la:.0f} min ago, {bad} of last {len(done)} failed", ageMin=round(la))
 except Exception as e:
     put("actions", "degraded", f"could not read workflow runs: {e}")

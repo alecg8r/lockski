@@ -9,7 +9,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: data-publish
+  group: monitor
   cancel-in-progress: false
 jobs:
   health:

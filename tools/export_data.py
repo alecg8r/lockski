@@ -11,10 +11,15 @@ from pathlib import Path
 W, META = Path(sys.argv[1]), Path(sys.argv[2])
 D = Path(__file__).resolve().parents[1] / "data"
 D.mkdir(exist_ok=True)
+old_led = json.loads((D / "ledger.json").read_text()) if (D / "ledger.json").exists() else {}
 for name in ("model", "ledger", "weeks"):
     src = W / f"{name}.json"
     data = json.loads(src.read_text())
     assert data, f"{name}.json is empty"
+    if name == "ledger":   # a final the live job already graded stays, unless the daily run has its own result
+        for gid, doc in old_led.items():
+            if doc.get("result") and gid in data and not data[gid].get("result"):
+                data[gid]["result"] = doc["result"]
     (D / f"{name}.json").write_text(json.dumps(data, separators=(",", ":")))
 meta = json.loads(META.read_text()); meta = meta.get("data", meta)
 (D / "meta.json").write_text(json.dumps(meta, separators=(",", ":")))

@@ -40,9 +40,9 @@ const fmtTime = iso => new Date(iso).toLocaleTimeString([], { hour: "numeric", m
 const per = g => { const p = g.periodDescriptor || {}; const n = p.number; const name = p.periodType === "OT" ? "ot" : p.periodType === "SO" ? "so" : ["", "1st", "2nd", "3rd"][n] || "ot"; return g.clock && g.clock.inIntermission ? `end of ${name}` : `${name} ${g.clock ? g.clock.timeRemaining : ""}`; };
 async function load() {
   try {
-    const r = await fetch("https://api-web.nhle.com/v1/schedule/now", { cache: "no-store" }); if (!r.ok) throw 0;
+    const r = await fetch("/api/nhl/schedule/now", { cache: "no-store" }); if (!r.ok) throw 0;
     const j = await r.json(); DAYS = (j.gameWeek || []).map(d => ({ date: d.date, games: d.games || [] }));
-    const s = await fetch("https://api-web.nhle.com/v1/score/now", { cache: "no-store" }); if (s.ok) { const sj = await s.json(); const by = {}; (sj.games || []).forEach(g => by[g.id] = g);
+    const s = await fetch("/api/nhl/score/now", { cache: "no-store" }); if (s.ok) { const sj = await s.json(); const by = {}; (sj.games || []).forEach(g => by[g.id] = g);
       DAYS.forEach(d => d.games = d.games.map(g => by[g.id] ? { ...g, ...by[g.id] } : g)); }
     STATE = "on"; LAST = Date.now(); if (!DAY || !DAYS.some(d => d.date === DAY)) DAY = (DAYS.find(d => d.date === todayET()) || DAYS[0] || {}).date;
   } catch (e) { STATE = "off"; }

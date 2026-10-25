@@ -709,7 +709,7 @@ function renderGames() {
       const on = lv && lv.live, done = (lv && lv.final) || fin, ag = done ? (fin ? fin.ag : lv.ag) : lv ? lv.ag : null, hg = done ? (fin ? fin.hg : lv.hg) : lv ? lv.hg : null;
       const top = on ? `<span class="livepill"><i></i>${esc(liveTxt(g.id).replace(/^\d+–\d+ · /, ""))}</span>` : done ? `<span>final${(fin && fin.ot) || (lv && lv.ot) ? " · ot" : ""}</span>` : `<span>${esc(fmtTime(g.startUTC))}</span>`;
       return `<button class="game${now > Date.parse(g.startUTC) && !on && !done ? " past" : ""}${on ? " on" : ""}" data-gid="${esc(g.id)}" data-score="1">
-        <div class="gtop">${top}<span>${on || done ? `${pct(pa)} · ${pct(ph)} pregame` : ""}</span></div>
+        <div class="gtop">${top}<span>${on ? (() => { const lp = liveProb(g.id); return lp == null ? "" : `<b style="color:var(--fg)">${esc(g.away)} ${pct(1 - lp)} · ${esc(g.home)} ${pct(lp)}</b> live`; })() : done ? `${pct(pa)} · ${pct(ph)} pregame` : ""}</span></div>
         <div class="gteams">
           <div class="side${pa > ph ? " fav" : ""}">${badge(g.away, "s")}<div class="n"><b>${esc(g.away)}</b><span>${on || done ? `<b class="lsc${ag > hg ? " w" : ""}">${ag}</b>` : pct(pa)}</span></div></div>
           <span class="at">${on || done ? "–" : "at"}</span>
@@ -732,6 +732,7 @@ function ledgerRows() {
     const pick = o.pHome >= 0.5 ? d.home : d.away, p = Math.max(o.pHome, 1 - o.pHome);
     const r = { id: d.id, date: d.date, away: d.away, home: d.home, start: d.startUTC, at: o.at, pick, p, mult: o.marketML ? Math.floor(100 / implied(pick === d.home ? o.marketML[1] : o.marketML[0])) / 100 : null };
     if (d.result && d.result.void) continue;
+    const lvf = !d.result && liveOf(d.id); if (lvf && lvf.final && lvf.ag !== lvf.hg) { r.ok = (lvf.ag > lvf.hg ? d.away : d.home) === pick; r.score = `${lvf.ag}–${lvf.hg}${lvf.ot ? " OT" : ""}`; graded.push(r); continue; }
     if (d.result) { r.ok = d.result.winner === pick; r.score = `${d.result.ag}–${d.result.hg}${d.result.ot ? " OT" : ""}`; graded.push(r); } else pending.push(r);
   }
   graded.sort((a, b) => a.start < b.start ? 1 : -1); pending.sort((a, b) => a.start < b.start ? -1 : 1);
@@ -944,6 +945,9 @@ function betStatus(b) {   // graded from the same final scores the Results tab u
     if (ls.includes("void")) return { k: "void", won: false, profit: 0, score: "a game was called off, stake returned" };   // simplification: a void leg refunds the whole entry
     if (ls.includes("lost")) return { k: "lost", won: false, profit: -b.stake, score: `${won} of ${n} won` };
     if (won === n) return { k: "won", won: true, profit: b.stake * (b.mult - 1), score: `all ${n} won` };
+    const hit = b.legs.reduce((acc, l, i) => { if (ls[i] === "won") return acc; const lp = teamLive(l.gid, l.team, l.home); if (lp != null) return acc * lp;
+      const mm = S.model && S.model.games && S.model.games[l.gid]; const pp = mm ? (l.team === l.home ? mm.pHome : mm.pAway) : .5; return acc * pp; }, 1);
+    if (ls.includes("live")) return { k: "live", label: `${won ? won + " of " + n + " won · " : ""}${pct(hit)} to hit`, lp: hit };
     return { k: ls.includes("live") ? "live" : "soon", label: won ? `${won} of ${n} won so far` : ls.includes("live") ? "Games on" : "Not started" };
   }
   const L = (S.ledger || {})[b.gid], r = L && L.result;
@@ -952,7 +956,7 @@ function betStatus(b) {   // graded from the same final scores the Results tab u
   const lv = liveOf(b.gid);
   if (lv && lv.final && lv.ag != null && lv.hg != null && lv.ag !== lv.hg) { const winner = lv.ag > lv.hg ? b.away : b.home, won = winner === b.team; return { k: won ? "won" : "lost", won, profit: won ? b.stake * (b.mult - 1) : -b.stake, score: `${lv.ag}–${lv.hg}${lv.ot ? " OT" : ""} (live feed)` }; }
   const g = allGames().find(x => x.id === b.gid), start = g ? Date.parse(g.startUTC) : NaN, now = Date.now();
-  if (lv && lv.live) return { k: "live", label: liveTxt(b.gid) };
+  if (lv && lv.live) { const lp = teamLive(b.gid, b.team, b.home); return { k: "live", label: liveTxt(b.gid) + (lp != null ? ` · ${pct(lp)} to win` : ""), lp }; }
   if (now < start) return { k: "soon", label: `Starts ${fmtTime(g.startUTC)}` };
   if (now < start + 3.5 * 36e5) return { k: "live", label: "Game on now" };
   return { k: "wait", label: "final comes with the next update" };
@@ -1121,7 +1125,7 @@ function openSheet(id, opts) {
     </div>
     ${led && led.result ? `<div class="box"><p class="final">${led.result.void ? `Game called off${led.result.reason ? ": " + esc(led.result.reason) : ""}. Bets on it are returned.` : `Final: ${esc(g.away)} ${led.result.ag}, ${esc(g.home)} ${led.result.hg}${led.result.ot ? " (OT)" : ""}. ${led.result.winner === fav ? "We got it right ✓" : "We missed this one"}`}</p></div>` : ""}
     ${started && !(led && led.result) && !(lv && (lv.live || lv.final)) ? `<div class="feedline${LIVE.state === "on" ? " on" : ""}">${feedStatus()}</div>` : ""}
-    ${lv && (lv.live || lv.final) && !(led && led.result) ? `<div class="box" style="text-align:center"><p class="final" style="font-size:30px;font-weight:700">${esc(g.away)} ${lv.ag} – ${lv.hg} ${esc(g.home)}</p><p class="m">${lv.final ? `final${lv.ot ? " · ot" : ""}` : esc(liveTxt(g.id).replace(/^\d+–\d+ · /, "")) + " · live"}</p></div>` : ""}
+    ${lv && (lv.live || lv.final) && !(led && led.result) ? `<div class="box" style="text-align:center"><p class="final" style="font-size:30px;font-weight:700">${esc(g.away)} ${lv.ag} – ${lv.hg} ${esc(g.home)}</p><p class="m">${lv.final ? `final${lv.ot ? " · ot" : ""}` : esc(liveTxt(g.id).replace(/^\d+–\d+ · /, "")) + " · live"}${lv.sa != null ? ` · shots ${lv.sa}–${lv.sh}` : ""}</p>${lv.live && liveProb(g.id) != null ? `<p style="margin-top:6px"><b>${esc(nick(g.away))} ${pct(1 - liveProb(g.id))}</b> · <b>${esc(nick(g.home))} ${pct(liveProb(g.id))}</b> <span class="m">to win right now</span></p>` : ""}</div>` : ""}
     ${!started && m && !scoreOnly ? `<div class="box">
       <div style="display:flex;align-items:center;gap:12px">${badge(fav)}<p><b>Take ${esc(nick(fav))} to win</b><br><span class="m">${pct(p)} chance · worth it at ${fmtX(minMult(p))} or more</span></p></div>
       <div id="pp-v" style="display:grid;gap:10px">${callHtml(p, m, side, key)}</div>
@@ -1202,18 +1206,41 @@ function render() { try { renderBets(); renderHot(); renderGames(); renderMine()
    and finals arrive in about a second and your bets grade on the spot. If it's blocked (same rule that blocks
    outside images), LIVE.state says so and the twice-daily update is the source. Never guessed. */
 const LIVE = { state: "unknown", at: 0, games: {} };
-const NHL_SCORES = "https://api-web.nhle.com/v1/score/now";
+const NHL_BASE = "/api/nhl/";
+const ymdET = d => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(d);
+function parseScore(j, out) {
+  (j.games || []).forEach(g => { const a = g.awayTeam && g.awayTeam.abbrev, h = g.homeTeam && g.homeTeam.abbrev; if (!a || !h) return;
+    const id = `${g.gameDate}-${a}-${h}`, st = g.gameState, pd = g.periodDescriptor || {};
+    out[id] = { state: st, ag: g.awayTeam.score, hg: g.homeTeam.score, sa: g.awayTeam.sog, sh: g.homeTeam.sog, period: pd.number, ptype: pd.periodType, clock: g.clock && g.clock.timeRemaining, inIntermission: g.clock && g.clock.inIntermission,
+      final: st === "OFF" || st === "FINAL", live: st === "LIVE" || st === "CRIT", ot: !!pd.periodType && pd.periodType !== "REG" }; });
+}
 async function liveFetch() {
   try {
-    const r = await fetch(NHL_SCORES, { mode: "cors", cache: "no-store" }); if (!r.ok) throw new Error("http " + r.status);
-    const j = await r.json(); const out = {};
-    (j.games || []).forEach(g => { const a = g.awayTeam && g.awayTeam.abbrev, h = g.homeTeam && g.homeTeam.abbrev; if (!a || !h) return;
-      const id = `${g.gameDate}-${a}-${h}`, st = g.gameState;
-      out[id] = { state: st, ag: g.awayTeam.score, hg: g.homeTeam.score, period: g.periodDescriptor && g.periodDescriptor.number, clock: g.clock && g.clock.timeRemaining, inIntermission: g.clock && g.clock.inIntermission,
-        final: st === "OFF" || st === "FINAL", live: st === "LIVE" || st === "CRIT", ot: g.periodDescriptor && g.periodDescriptor.periodType !== "REG" }; });
+    const y = ymdET(new Date(Date.now() - 864e5));
+    const [r1, r2] = await Promise.all([fetch(NHL_BASE + "score/now", { cache: "no-store" }), fetch(NHL_BASE + "score/" + y, { cache: "no-store" }).catch(() => null)]);
+    if (!r1.ok) throw new Error("http " + r1.status);
+    const out = {}; if (r2 && r2.ok) parseScore(await r2.json(), out); parseScore(await r1.json(), out);
     LIVE.games = out; LIVE.state = "on"; LIVE.at = Date.now(); return true;
   } catch (e) { LIVE.state = "blocked"; return false; }
 }
+/* Live win chance during a game. Remaining goals for each side ~ Poisson(pregame expected goals x share of the game left);
+   a tie after 60 minutes goes to overtime/shootout, where the pregame favourite keeps a small edge. Uses only the score,
+   the clock and the pregame model, so it moves with every goal and every minute. */
+function pois(l, k) { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; }
+function liveProb(gid) {
+  const l = liveOf(gid); if (!l || !l.live) return null;
+  const m = (S.model && S.model.games && S.model.games[gid]) || {}, led = (S.ledger || {})[gid], o = led && led.official;
+  const ph = o ? o.pHome : m.pHome ?? .5, xh = m.xgHome || 3.0, xa = m.xgAway || 2.9;
+  const pOT = .5 + (ph - .5) * .6;
+  const per = l.period || 1, mmss = String(l.clock || "20:00").split(":"), left = l.inIntermission ? 0 : (+mmss[0] || 0) + (+mmss[1] || 0) / 60;
+  const d = (l.hg || 0) - (l.ag || 0);
+  if (per >= 4) return d > 0 ? 1 : d < 0 ? 0 : pOT;
+  const remMin = Math.max(0, (3 - per) * 20 + left), f = remMin / 60, lh = xh * f, la = xa * f;
+  let win = 0, tie = 0;
+  for (let i = 0; i <= 12; i++) { const pi = pois(lh, i); for (let j = 0; j <= 12; j++) { const pj = pi * pois(la, j), fd = d + i - j; if (fd > 0) win += pj; else if (fd === 0) tie += pj; } }
+  return Math.min(.98, Math.max(.02, win + tie * pOT));   // never show certainty before the horn (empty nets, late swings)
+}
+const teamLive = (gid, team, home) => { const p = liveProb(gid); return p == null ? null : (team === home ? p : 1 - p); };
 const liveOf = gid => LIVE.games[gid] || null;
 function feedStatus() {
   const ago = LIVE.at ? Math.round((Date.now() - LIVE.at) / 1000) : null;
@@ -1319,8 +1346,8 @@ render(); renderSlipBar();
 liveFetch().then(ok => { renderFoot(); if (ok) { render(); } });
 (function livePoll() {
   const tick = async () => { const ok = await liveFetch(); if (ok) { try { if (S.view === "games") renderGames(); if (S.view === "mine") renderMine(); if (S.view === "bets") renderBets(); if (S.view === "results") renderResults(); renderFoot(); } catch (e) { console.warn(e); } }
-    const anyOn = Object.values(LIVE.games).some(l => l.live); setTimeout(tick, LIVE.state === "on" ? (anyOn ? 30000 : 120000) : 300000); };
-  setTimeout(tick, 30000);
+    const anyOn = Object.values(LIVE.games).some(l => l.live); setTimeout(tick, LIVE.state === "on" ? (anyOn ? 20000 : 60000) : 120000); };
+  setTimeout(tick, 20000);
   setInterval(() => { const f = $("feedline"); if (f) { f.innerHTML = feedStatus(); f.classList.toggle("on", LIVE.state === "on"); } }, 5000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
 })();
@@ -1347,7 +1374,9 @@ liveFetch().then(ok => { renderFoot(); if (ok) { render(); } });
     db.collection("bets").onSnapshot(snap => { const B = {}; snap.docs.forEach(d => { if (d.exists) B[d.id] = d.data(); }); S.bets = B; try { renderMine(); renderResults(); renderBets(); } catch (e) { console.error(e); } }, fail);
     db.doc("settings/tracker").onSnapshot(d => { if (d.exists && Number(d.data().unit) > 0) { S.unit = Number(d.data().unit); try { renderMine(); } catch {} } }, fail);
   } catch (e) { fail(e); }
-  setInterval(() => { db.loadFiles().catch(() => {}); }, 5 * 60 * 1000);
+  setInterval(() => { if (!document.hidden) db.loadFiles().catch(() => {}); }, 2 * 60 * 1000);
+  setInterval(() => { if (!document.hidden && BETS_MODE === "api") db.loadBets().catch(() => {}); }, 30 * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { db.loadFiles().catch(() => {}); if (BETS_MODE === "api") db.loadBets().catch(() => {}); } });
   // first run on a new site: bring over the bets from the Claude app once (data/bets-seed.json), never twice
   try { if (!betsList().length && !localStorage.getItem("lk-seeded")) { const seed = await fetchJSON("data/bets-seed.json").catch(() => null);
     if (seed && seed.bets) { for (const b of Object.values(seed.bets)) { try { await saveBet(b); } catch {} } localStorage.setItem("lk-seeded", "1"); renderMine(); renderBets(); renderResults(); } } } catch {}

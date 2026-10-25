@@ -193,6 +193,19 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .mrow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14.5px; } .mrow b { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .pill { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; border: 1px solid var(--line); color: var(--muted); }
 .pill.take { background: var(--fg); color: #000; border-color: var(--fg); } .pill.wait, .pill.news { color: var(--fg); border-color: var(--fg); }
+.slips { display: grid; gap: 10px; }
+.slip { border-radius: 18px; background: var(--card); border: 1px solid var(--line); padding: 14px; display: grid; gap: 10px; }
+.slip.on { border-color: #555; }
+.stop { display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--muted); } .stop b { color: var(--fg); font-size: 14px; }
+.stitle { font-size: 17px; font-weight: 700; letter-spacing: -.01em; }
+.slegs { display: grid; gap: 6px; }
+.sleg { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; background: #000; border: 1px solid var(--line); cursor: pointer; }
+.sleg .sl b { display: block; font-size: 14px; } .sleg .sl small { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.sleg .sp { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sleg.live { border-color: #555; } .sleg.live .sl small { color: var(--fg); }
+.sleg.won { border-color: rgba(34,197,94,.55); } .sleg.won .sp { color: #4ade80; } .sleg.lost { border-color: rgba(239,68,68,.5); } .sleg.lost .sp { color: #f87171; }
+.shit { display: grid; gap: 6px; } .shit span { font-size: 13px; color: var(--muted); } .shit b { color: var(--fg); font-size: 15px; }
+.sbar { height: 8px; border-radius: 999px; background: var(--raise); overflow: hidden; } .sbar i { display: block; height: 100%; background: var(--fg); border-radius: inherit; transition: width .6s ease; }
 .hrow.up { grid-template-columns: 30px minmax(0, 1fr) auto; }
 .hrow.won { border-color: rgba(34,197,94,.55); background: linear-gradient(90deg, rgba(34,197,94,.16), rgba(34,197,94,.03) 70%), var(--card); }
 .hrow.won .pk b { color: #4ade80; }
@@ -991,35 +1004,47 @@ function graph(rows) {   // rows: settled bets in order -> running profit line +
     <polyline class="ln" points="${line}"/><circle class="end" cx="${x(pts.length - 1)}" cy="${y(run)}" r="5"/>
     ${bars}<text class="ax" x="${P}" y="${H - 1}">Each bar is one bet: white won, gray lost, taller = more money</text></svg>`;
 }
+/* Live bet slips: one card per open bet, built for watching games. Each leg shows the score, period and clock
+   while it's on, and the chance it hits right now (live win chance; pregame model before puck drop; 100%/0% once final). */
+function legNow(l) {
+  const lv = liveOf(l.gid), L = (S.ledger || {})[l.gid], r = L && L.result, g = allGames().find(x => x.id === l.gid);
+  const m = S.model && S.model.games && S.model.games[l.gid], o = L && L.official;
+  const ph = o ? o.pHome : m ? m.pHome : .5, pre = l.team === l.home ? ph : 1 - ph;
+  if (r && r.void) return { k: "void", p: null, line: "called off" };
+  const fin = r ? { ag: r.ag, hg: r.hg, ot: r.ot, w: r.winner } : lv && lv.final && lv.ag !== lv.hg ? { ag: lv.ag, hg: lv.hg, ot: lv.ot, w: lv.ag > lv.hg ? l.away : l.home } : null;
+  if (fin) return { k: fin.w === l.team ? "won" : "lost", p: fin.w === l.team ? 1 : 0, line: `final ${l.away} ${fin.ag}–${fin.hg} ${l.home}${fin.ot ? " ot" : ""}` };
+  if (lv && lv.live) return { k: "live", p: teamLive(l.gid, l.team, l.home) ?? pre, line: `${l.away} ${lv.ag}–${lv.hg} ${l.home} · ${liveTxt(l.gid).replace(/^\d+–\d+ · /, "")}` };
+  if (g && Date.now() < Date.parse(g.startUTC)) return { k: "soon", p: pre, line: `${l.away} at ${l.home} · ${whenTxt(g).toLowerCase()}` };
+  return { k: "wait", p: pre, line: `${l.away} at ${l.home} · waiting for the final` };
+}
+function slipCard(b) {
+  const legs = b.type === "parlay" ? b.legs : [{ gid: b.gid, team: b.team, away: b.away, home: b.home }];
+  const now = legs.map(legNow), live = now.some(x => x.k === "live");
+  const hit = now.every(x => x.p != null) ? now.reduce((a, x) => a * x.p, 1) : null;
+  const pays = b.stake * b.mult;
+  const chip = live ? `<span class="livepill"><i></i>live</span>` : now.every(x => x.k === "soon") ? `<span>${esc(now[0].line.split(" · ").pop())}</span>` : `<span>in progress</span>`;
+  const legRow = (l, x) => `<div class="sleg ${x.k}" data-gid="${esc(l.gid)}">${badge(l.team, "s")}<div class="sl"><b>${esc(nick(l.team))} to win</b><small>${esc(x.line)}</small></div><span class="sp">${x.k === "won" ? "✓" : x.k === "lost" ? "✗" : x.p != null ? pct(x.p) : "–"}</span></div>`;
+  return `<div class="slip${live ? " on" : ""}">
+    <div class="stop">${chip}<span>${money(b.stake)} → <b>${money(pays)}</b></span></div>
+    <div class="stitle">${b.type === "parlay" ? `${legs.length}-pick parlay · ${fmtX(b.mult)}` : `${esc(nick(b.team))} · ${fmtX(b.mult)}`}</div>
+    <div class="slegs">${legs.map((l, i) => legRow(l, now[i])).join("")}</div>
+    ${hit != null ? `<div class="shit"><div class="sbar"><i style="width:${Math.round(hit * 100)}%"></i></div><span><b>${pct(hit)}</b> to hit${live ? " right now" : ""}</span></div>` : ""}
+  </div>`;
+}
 function renderMine() {
   const v = $("v-mine"); if (!v) return;
   const all = betsList().map(b => ({ ...b, st: betStatus(b) }));
-  const cut = { week: 7, month: 30 }[S.range], now = Date.now();
-  const inRange = all.filter(b => !cut || now - Date.parse(b.date + "T12:00:00") <= cut * 864e5);
-  const done = inRange.filter(b => isDone(b.st)), open = all.filter(b => !isDone(b.st));
-  const profit = done.reduce((a, b) => a + b.st.profit, 0), put = inRange.reduce((a, b) => a + b.stake, 0);
-  const w = done.filter(b => b.st.won).length;
-  const pl = done.filter(b => b.type === "parlay");
-  const split = k => { const s = done.filter(b => !!b.ourPick === k); return s.length ? `${s.filter(b => b.st.won).length}–${s.filter(b => !b.st.won).length}, ${money(s.reduce((a, b) => a + b.st.profit, 0), true)}` : "none yet"; };
-  const row = b => b.type === "parlay" ? `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.legs[0].gid)}"><span class="stack">${b.legs.slice(0, 2).map(l => badge(l.team, "s")).join("")}</span><span class="g">${money(b.stake)} parlay at ${fmtX(b.mult)}<small>${esc(betLabel(b))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`
-    : `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : b.st.k === "void" ? `<span class="pill">called off · $0</span>` : `<span class="pill ${b.st.k === "live" ? "take" : ""}">${esc(b.st.label)}</span>`}</span></button>`;
+  const done = all.filter(b => isDone(b.st)), open = all.filter(b => !isDone(b.st));
+  const row = b => b.type === "parlay" ? `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.legs[0].gid)}"><span class="stack">${b.legs.slice(0, 2).map(l => badge(l.team, "s")).join("")}</span><span class="g">${money(b.stake)} parlay at ${fmtX(b.mult)}<small>${esc(betLabel(b))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : `<span class="pill">called off · $0</span>`}</span></button>`
+    : `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : `<span class="pill">called off · $0</span>`}</span></button>`;
+  const liveFirst = open.slice().sort((a, b) => (legNow(a.type === "parlay" ? a.legs[0] : a).k === "live" ? 0 : 1) - (legNow(b.type === "parlay" ? b.legs[0] : b).k === "live" ? 0 : 1));
   v.innerHTML = `
-    <div><h1>My bets</h1><p class="sub">Tap any game, then "I took this bet". Wins and losses fill in on their own.</p></div>
+    <div><h1>My bets</h1><p class="sub">open bets track live. wins and losses settle on their own.</p></div>
     ${all.length ? `
-    <div class="seg" role="group" aria-label="Time range">${[["all", "All time"], ["month", "Month"], ["week", "Week"]].map(([k, l]) => `<button data-r="${k}" aria-pressed="${S.range === k}">${l}</button>`).join("")}</div>
-    <div class="hero">
-      <div class="pl"><b>${money(profit, true)}</b><span>${profit >= 0 ? "Profit" : "Down"} · ${units(profit)} · ${done.length ? `${w}–${done.length - w} record` : "no finished bets yet"}</span></div>
-      ${graph(done)}
-      <div class="stats3"><div><b>${money(put)}</b><span>Put down</span></div><div><b>${done.length ? pct(w / done.length) : "–"}</b><span>Won</span></div><div><b>${open.length}</b><span>Still going</span></div></div>
-    </div>
-    ${open.length ? `<h2 class="sec">Still going</h2><div class="list">${open.map(row).join("")}</div>` : ""}
-    ${done.length ? `<h2 class="sec">Finished</h2><div class="list">${done.slice().reverse().map(row).join("")}</div>
-      <div class="facts"><div><b>${split(true)}</b><span>When you took our pick</span></div><div><b>${split(false)}</b><span>When you went your own way</span></div>
-        ${pl.length ? `<div><b>${pl.filter(b => b.st.won).length}–${pl.filter(b => !b.st.won).length}, ${money(pl.reduce((a, b) => a + b.st.profit, 0), true)}</b><span>Parlays</span></div>` : ""}</div>` : ""}`
-    : `<div class="empty"><b>No bets yet</b><p>Tap a game, hit "I took this bet", and type how much you put down. Your profit graph starts here.</p></div>`}
-    <label class="unitrow"><span>My unit size</span><span>$ <input id="unit-in" inputmode="decimal" value="${S.unit}"></span></label>
-    <button class="linkbtn" data-backup="1" style="justify-self:center">back up or restore my bets</button>
-    <p class="fine">bets settle on their own minutes after the final horn.</p>`;
+    ${open.length ? `<h2 class="sec">open · ${open.length}</h2><div class="slips">${liveFirst.map(slipCard).join("")}</div>` : `<div class="empty"><b>no open bets</b><p>tap a game on home and hit "i took this bet" to track it here.</p></div>`}
+    ${done.length ? `<h2 class="sec">Finished</h2><div class="list">${done.slice().reverse().map(row).join("")}</div>` : ""}`
+    : `<div class="empty"><b>No bets yet</b><p>Tap a game on home, hit "I took this bet", and type how much you put down.</p></div>`}
+    <button class="linkbtn" data-backup="1" style="justify-self:center">back up or restore my bets</button>`;
 }
 function openBackup() {   // copy-out / paste-in of the bet list. restoring only adds bets that aren't already there.
   const txt = JSON.stringify({ lockski: "bets", exported: new Date().toISOString(), unit: S.unit, bets: betsList().map(({ id, ...b }) => b) }, null, 1);

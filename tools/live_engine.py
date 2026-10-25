@@ -194,7 +194,7 @@ def finish(ok, why, run=None):
     meta["runLog"] = [entry] + [x for x in meta.get("runLog", []) if x.get("kind") == "live"][:29]
     if ok:
         meta["lastSync"] = now
-    meta["nextRefresh"] = "live: every 20 minutes, around the clock"
+    meta["nextRefresh"] = "live: every 10 minutes, around the clock"
     meta["source"] = "NHL schedule, box scores and play-by-play (live); goalies, injuries and odds from Daily Faceoff and CBS (lineup runs)"
     (DATA / "meta.json").write_text(json.dumps(meta, separators=(",", ":")))
     print("ok" if ok else "FAILED", why, "|", "; ".join(notes), "|", errors[:5])

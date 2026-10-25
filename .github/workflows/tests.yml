@@ -13,3 +13,7 @@ jobs:
         with: { python-version: "3.12", cache: pip }
       - run: pip install -q -r engine/requirements.txt
       - run: python3 -m unittest discover -s tools/tests -v
+      - name: bet store (simulated Netlify Blobs)
+        run: |
+          mkdir -p /tmp/bt && cp -r tools/tests/bets/. /tmp/bt/ && cp netlify/functions/bets.mjs /tmp/bt/bets.mjs
+          cd /tmp/bt && sed -i 's#import("../../../netlify/functions/bets.mjs")#import("./bets.mjs")#' t.mjs && node t.mjs

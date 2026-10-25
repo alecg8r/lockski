@@ -440,9 +440,10 @@ function estMult(m, side) {
   return ml ? Math.floor(100 / implied(ml)) / 100 : null;
 }
 // The call for a pick with chance p at multiplier x
-function decide(p, x) {
+function decide(p, x, typed) {   // typed = you entered the real PrizePicks multiplier; otherwise x is estimated from sportsbook odds
   if (!x || x < 1.01) return null;
   const need = minMult(p), ten = `$10 pays back $${(10 * x).toFixed(2)}`;
+  if (!typed && x >= need) return { k: "take", t: `Worth it at ${fmtX(need)}+`, s: `Sportsbooks suggest about ${fmtX(x)}. That's an estimate, so check PrizePicks pays ${fmtX(need)} or more before you take it.`, pill: `Worth it at ${fmtX(need)}+` };
   if (p - 1 / x >= BIG) return { k: "news", t: "Check news first", s: `${fmtX(x)} is more than this pick should pay. Make sure the goalie or lineup didn't change, then take it. ${ten}.`, pill: "Check news" };
   if (x >= need) return { k: "take", t: "Take it", s: `${ten}.`, pill: "Take it" };
   if (need - x <= 0.10) return { k: "wait", t: `Wait for ${fmtX(need)}`, s: `It pays ${fmtX(x)} right now. Take it if it moves up to ${fmtX(need)}.`, pill: `Wait for ${fmtX(need)}` };
@@ -629,7 +630,7 @@ $("slipbar").addEventListener("click", openParlay);
 
 /* ---------------- Home ---------------- */
 const lockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>`;
-function callFor(B) { const mu = multFor(B.m, B.side, B.g.id + ":" + B.side); return mu ? { mu, d: decide(B.p, mu.x) } : null; }
+function callFor(B) { const mu = multFor(B.m, B.side, B.g.id + ":" + B.side); return mu ? { mu, d: decide(B.p, mu.x, mu.typed) } : null; }
 function betCard(B) {
   const c = callFor(B), news = c && c.d && c.d.k === "news";
   return `<article class="bet" data-gid="${esc(B.g.id)}" tabindex="0" aria-label="Take this bet: ${esc(full(B.team))}, ${pct(B.p)} chance to win. Tap for details.">
@@ -1181,7 +1182,7 @@ function multFor(m, side, key) {   // typed multiplier wins, else the estimate
   const e = estMult(m, side); return e ? { x: e, typed: false } : null;
 }
 function callHtml(p, m, side, key) {
-  const mu = multFor(m, side, key), d = mu && decide(p, mu.x);
+  const mu = multFor(m, side, key), d = mu && decide(p, mu.x, mu.typed);
   if (!d) return `<div class="call no"><b>Type the multiplier</b><span>No PrizePicks estimate for this game yet. Type the multiplier you see on PrizePicks below.</span></div>`;
   return `<div class="call ${d.k}"><b>${esc(d.t)}</b><span>${esc(d.s)}</span></div>
     <div class="mrow"><span>${mu.typed ? "PrizePicks pays" : "PrizePicks pays about"}</span><b>${fmtX(mu.x)}</b></div>`;
@@ -1319,8 +1320,8 @@ function staleHtml() {   // shown at the top of home when the last successful up
   const h = dataAgeH(); if (h == null) return "";
   if (DB_STATE === "offline") return `<div class="empty" style="padding:12px"><b>showing a saved copy</b><p>couldn't load the latest data files. picks below are from ${esc(agoTxt(h))}.</p></div>`;
   if (BETS_MODE === "local") return `<div class="empty" style="padding:12px"><b>bets are saved on this device only</b><p>the bet store isn't set up yet on this site. the README in the project explains the 2-minute setup; until then, use "back up or restore my bets" to move them.</p></div>`;
-  if (h <= 30) return "";
-  return `<div class="empty" style="padding:12px"><b>data is ${esc(agoTxt(h))} old</b><p>the daily update hasn't landed. tap ↻ to run it now. picks below may be out of date.</p></div>`;
+  if (h <= 1.5) return "";   // the server updates every few minutes; older than 90 min means it is behind
+  return `<div class="empty" style="padding:12px"><b>picks last updated ${esc(agoTxt(h))} ago</b><p>the automatic update is running behind. live scores and your bets still update; picks and prices below may be out of date.</p></div>`;
 }
 const agoTxt = h => h < 1 ? "less than an hour" : h < 48 ? `${Math.round(h)} hours` : `${Math.round(h / 24)} days`;
 let DB_STATE = "connecting";
@@ -1425,9 +1426,11 @@ function markBusy() { $("refresh").classList.toggle("busy", Date.now() - lastMan
 $("refresh").addEventListener("click", async () => {
   $("refresh").classList.add("busy");
   try { await Promise.all([DB ? resync() : null, liveFetch()]); render(); renderSlipBar(); } catch (e) { console.warn(e); }
-  const h = dataAgeH(), since = Date.now() - lastManual();
-  if (!(h != null && h > 3)) { $("refresh").classList.toggle("busy", since < COOLDOWN); toast(`<b>fresh.</b> ${LIVE.state === "on" ? "live scores on · " : ""}last deep update ${S.meta && S.meta.lastSync ? esc(new Date(S.meta.lastSync).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })) : "unknown"}.`, 3500); return; }
-  toast(`<b>fresh.</b> ${LIVE.state === "on" ? "live scores on · " : ""}picks and prices update twice a day (morning and evening).`, 3500);
+  // honest: says what was actually refreshed and how old the server's picks really are (the app can't start a server run)
+  const mins = S.meta && S.meta.lastSync ? Math.max(0, Math.round((Date.now() - Date.parse(S.meta.lastSync)) / 60000)) : null;
+  const sc = LIVE.state === "on" ? "scores live" : "live scores unavailable right now";
+  const pk = mins == null ? "picks: no update time" : mins <= 45 ? `picks updated ${mins < 1 ? "just now" : mins + " min ago"}` : `<b>picks are ${agoTxt(mins / 60)} old</b>, server update behind`;
+  toast(`${sc} · ${pk}`, 4000);
   $("refresh").classList.remove("busy");
 });
 

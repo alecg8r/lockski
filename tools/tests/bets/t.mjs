@@ -1,0 +1,18 @@
+globalThis.Netlify = { env: { get: () => "1234" } };
+const { default: h } = await import("../../../netlify/functions/bets.mjs");
+const post = b => h(new Request("http://x/api/bets", { method: "POST", headers: { "x-lockski-pin": "1234" }, body: JSON.stringify(b) }));
+const get = async () => (await h(new Request("http://x/api/bets"))).json();
+const bet = { type: "single", date: "2026-10-25", gid: "g1", team: "COL", stake: 10, mult: 1.5, at: "2026-10-25T01:00:00Z" };
+const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
+let r = await post({ op: "add", bet }); ok(r.status === 200, "add first bet");
+r = await post({ op: "add", bet }); ok((await r.json()).duplicate === true, "same bet twice is stored once");
+ok(Object.keys((await get()).bets).length === 1, "one bet stored");
+r = await h(new Request("http://x/api/bets", { method: "POST", headers: { "x-lockski-pin": "nope" }, body: "{}" })); ok(r.status === 401, "wrong pin rejected");
+globalThis.__race = true; r = await post({ op: "add", bet: { ...bet, gid: "g2", at: "2026-10-25T02:00:00Z" } });
+const d = await get(); ok(d.bets.other && Object.keys(d.bets).length === 3, "concurrent write from another phone is kept (no lost update)");
+globalThis.__fail = true; r = await post({ op: "add", bet: { ...bet, gid: "g3" } }); ok(r.status === 503, "storage error -> 503, nothing written");
+r = await h(new Request("http://x/api/bets")); ok(r.status === 503, "read error -> 503 (never an empty list)"); globalThis.__fail = false;
+ok(Object.keys((await get()).bets).length === 3, "bets intact after failures");
+const bk = await (await h(new Request("http://x/api/bets?backups=1"))).json(); ok(bk.backups.length >= 2, "history copies kept: " + bk.backups.length);
+const id = Object.keys((await get()).bets).find(k => k !== "other"); await post({ op: "delete", id }); ok(Object.keys((await get()).bets).length === 2, "delete works");
+r = await post({ op: "restoreBackup", key: bk.backups[0] }); ok(Object.keys((await r.json()).bets).length === 3, "restore from history brings the deleted bet back");

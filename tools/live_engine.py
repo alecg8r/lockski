@@ -169,6 +169,10 @@ def main():
     for gid, doc in old.items():
         if doc.get("result") and gid in led and not led[gid].get("result"):
             led[gid]["result"] = doc["result"]
+    try:   # official NHL headshots for hot-list players and starting goalies (tools/rosters.py keeps data/rosters.json)
+        sys.path.insert(0, str(ROOT / "tools")); import rosters as RO; RO.attach(m)
+    except Exception as e:
+        notes.append(f"headshots skipped: {e}")
     # only write (and so only commit) when something real changed, so the repo history stays small
     vol = lambda d: {k: v for k, v in d.items() if k not in ("generatedAt", "run")}
     old_m = load(DATA / "model.json", {})

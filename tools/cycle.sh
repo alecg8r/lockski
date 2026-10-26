@@ -10,6 +10,7 @@ step inputs python3 tools/fetch_inputs.py scheduled
 step settle python3 tools/settle_live.py
 step shotquality python3 tools/xg_nightly.py
 step engine python3 tools/live_engine.py
+step headshots python3 tools/rosters.py
 if ! python3 tools/validate_data.py; then
   echo "::error::validation failed; restoring last good data"
   git checkout -- data/

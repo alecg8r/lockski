@@ -226,6 +226,11 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .took:hover { background: var(--raise); }
 .betform { display: grid; gap: 12px; }
 .pickteam { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.pickteam.pickline { grid-template-columns: repeat(3, 1fr); } .pickline button { justify-content: center; padding: 9px 6px; }
+.plrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.plrow .pln { display: grid; line-height: 1.3; min-width: 0; } .plrow .pln b { font-size: 15px; } .plrow .pln .m { font-size: 12.5px; }
+.plrow .plb { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; } .plrow .plus { margin: 0; flex: none; width: 34px; height: 34px; }
+.pltook { appearance: none; flex: 1; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--fg); font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
 .pickteam button { appearance: none; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; border: 1px solid var(--line); background: #000; cursor: pointer; font-weight: 700; color: var(--muted); }
 .pickteam button[aria-pressed="true"] { border-color: var(--fg); color: var(--fg); box-shadow: inset 0 0 0 1px var(--fg); }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -513,7 +518,13 @@ function picks() {   // the model's side for every upcoming game in the next 7 d
      When the sportsbooks post a line (each morning and evening run), the card switches to a real take/skip call on its own. */
 function bestBets() {
   const all = picks().map(B => { const c = callFor(B); return { ...B, c, priced: !!(c && c.d), ev: c && c.d && (c.d.k === "take" || c.d.k === "news") ? B.p * c.mu.x - 1 : null }; });
-  const value = all.filter(B => B.ev != null && B.ev > 0).sort((a, b) => b.ev - a.ev);
+  const now = Date.now(), pls = [];
+  allGames().forEach(g => { const m = S.model.games[g.id], k = m && m.market && m.market.pl, t0 = Date.parse(g.startUTC);
+    if (!k || !m.pl || t0 <= now || t0 > now + 7 * 864e5) return;
+    [[g.home, k.homeLine], [g.away, k.awayLine]].forEach(([team, line]) => {
+      const home = team === g.home, side = home ? "home" : "away", p = plProb(m, team, g.home, line), mu = plMultFor(m, team, g.home, line, plKey(g.id, side, line)), d = mu && decide(p, mu.x, mu.typed);
+      if (d && d.k === "take" && p * mu.x - 1 > 0) pls.push({ g, m, side, team, opp: home ? g.away : g.home, p, atHome: home, line, c: { mu, d }, priced: true, ev: p * mu.x - 1 }); }); });
+  const value = [...all.filter(B => B.ev != null && B.ev > 0), ...pls.sort((a, b) => b.ev - a.ev).slice(0, 2)].sort((a, b) => b.ev - a.ev);
   const early = all.filter(B => !B.priced && B.p >= 0.56).sort((a, b) => b.p - a.p);
   return [...value.slice(0, 4), ...early].slice(0, 8).sort((a, b) => a.g.startUTC < b.g.startUTC ? -1 : 1);   // shown soonest first
 }
@@ -526,11 +537,13 @@ const PARLAY_EDGE = 0.08, PARLAY_MAX = 6;
 let SLIP = []; try { SLIP = JSON.parse(localStorage.getItem("lk-slip") || "[]") || []; } catch { SLIP = []; }
 let SLIP_X = ""; try { SLIP_X = localStorage.getItem("lk-slipx") || ""; } catch {}
 const saveSlip = () => { try { localStorage.setItem("lk-slip", JSON.stringify(SLIP)); localStorage.setItem("lk-slipx", SLIP_X); } catch {} renderSlipBar(); };
-function legInfo(l) {   // chance + estimated multiplier for one pick
-  const m = S.model && S.model.games && S.model.games[l.gid], side = l.team === l.home ? "home" : "away";
-  const p0 = m ? (side === "home" ? m.pHome : m.pAway) : null, mu = m ? multFor(m, side, l.gid + ":" + side) : null;
+function legInfo(l) {   // chance + estimated multiplier for one pick (moneyline or puck line)
+  const m = S.model && S.model.games && S.model.games[l.gid], side = l.team === l.home ? "home" : "away", pl = l.line != null;
+  const p0 = !m ? null : pl ? plProb(m, l.team, l.home, l.line) : (side === "home" ? m.pHome : m.pAway);
+  const mu = !m ? null : pl ? plMultFor(m, l.team, l.home, l.line, plKey(l.gid, side, l.line)) : multFor(m, side, l.gid + ":" + side);
   // Backtest 2025-26: parlays priced on Lockski alone hit 18% vs 35% predicted. Use the average of Lockski and the betting market for parlays.
-  const pk = m && m.market ? (side === "home" ? m.market.pHome : m.market.pAway) : null, p = p0 == null ? null : pk == null ? p0 : (p0 + pk) / 2;
+  const pk = !m ? null : pl ? plMkt(m, l.team, l.home, l.line) : m.market ? (side === "home" ? m.market.pHome : m.market.pAway) : null;
+  const p = p0 == null ? null : pk == null ? p0 : (p0 + pk) / 2;
   const g = allGames().find(x => x.id === l.gid);
   return { p, x: mu ? mu.x : null, started: g ? Date.now() > Date.parse(g.startUTC) : false, g };
 }
@@ -550,12 +563,13 @@ function decideParlay(pm) {
   return { k: "no", t: "Don't take it", s: `${fmtX(pm.x)} doesn't pay enough for a ${pct(pm.pAll)} chance. It would need ${fmtX(pm.need)}.` };
 }
 const inSlip = (gid, team) => SLIP.some(l => l.gid === gid && (!team || l.team === team));
-function toggleLeg(g, team) {
+function toggleLeg(g, team, line) {   // one pick per game; tapping the same pick again removes it
+  const ln = line == null || line === "" || Number.isNaN(Number(line)) ? undefined : Number(line), lab = nl(team, ln);
   const i = SLIP.findIndex(l => l.gid === g.id);
-  if (i >= 0 && SLIP[i].team === team) { SLIP.splice(i, 1); toast(`Removed ${esc(nick(team))} from your parlay.`, 2500); }
-  else if (i >= 0) { SLIP[i].team = team; toast(`Switched to ${esc(nick(team))} in your parlay.`, 2500); }
+  if (i >= 0 && SLIP[i].team === team && SLIP[i].line === ln) { SLIP.splice(i, 1); toast(`Removed ${esc(lab)} from your parlay.`, 2500); }
+  else if (i >= 0) { SLIP[i].team = team; if (ln == null) delete SLIP[i].line; else SLIP[i].line = ln; toast(`Switched to ${esc(lab)} in your parlay.`, 2500); }
   else if (SLIP.length >= PARLAY_MAX) { toast(`A parlay can have up to ${PARLAY_MAX} picks.`); return; }
-  else { SLIP.push({ gid: g.id, date: g.date, away: g.away, home: g.home, team }); toast(`<b>Added ${esc(nick(team))}.</b> ${SLIP.length} pick${SLIP.length > 1 ? "s" : ""} in your parlay.`, 2500); }
+  else { SLIP.push({ gid: g.id, date: g.date, away: g.away, home: g.home, team, ...(ln != null ? { line: ln } : {}) }); toast(`<b>Added ${esc(lab)}.</b> ${SLIP.length} pick${SLIP.length > 1 ? "s" : ""} in your parlay.`, 2500); }
   SLIP_X = ""; saveSlip(); try { renderBets(); } catch {}
 }
 function renderSlipBar() {
@@ -579,7 +593,7 @@ function bestParlay() {   // best 2- or 3-pick parlay from today's picks, if any
 function openParlay() {
   const pm = parlayMath(SLIP, SLIP_X), d = decideParlay(pm);
   const legsHtml = SLIP.map((l, i) => { const inf = pm.info[i], opp = l.team === l.home ? l.away : l.home;
-    return `<div class="leg">${badge(l.team, "s")}<span class="g">${esc(nick(l.team))} to beat ${esc(nick(opp))}<small>${inf.g ? esc(whenTxt(inf.g)) : ""}</small></span><span class="v">${inf.p ? pct(inf.p) : "–"}<small><br>${inf.x ? "about " + fmtX(inf.x) : ""}</small></span><button class="rm" data-rm="${i}" aria-label="Remove ${esc(nick(l.team))}">×</button></div>`; }).join("");
+    return `<div class="leg">${badge(l.team, "s")}<span class="g">${l.line == null ? `${esc(nick(l.team))} to beat ${esc(nick(opp))}` : `${esc(nl(l.team, l.line))} vs ${esc(nick(opp))}`}<small>${inf.g ? esc(whenTxt(inf.g)) : ""}</small></span><span class="v">${inf.p ? pct(inf.p) : "–"}<small><br>${inf.x ? "about " + fmtX(inf.x) : ""}</small></span><button class="rm" data-rm="${i}" aria-label="Remove ${esc(nick(l.team))}">×</button></div>`; }).join("");
   $("sheet-card").innerHTML = `
     <button class="x" data-close="1" aria-label="Close">×</button>
     <div class="when">Parlay · ${SLIP.length} pick${SLIP.length > 1 ? "s" : ""}</div>
@@ -617,7 +631,7 @@ function openParlay() {
     if (e.target.closest("[data-clear]")) { SLIP = []; SLIP_X = ""; saveSlip(); renderBets(); closeSheet(); return; }
     if (e.target.closest("#px-save")) {
       const pmx = parlayMath(SLIP, SLIP_X), stake = Number($("px-stake").value); if (!(stake > 0 && pmx.x >= 1.01)) return;
-      const ours = SLIP.every(l => { const m = S.model.games[l.gid]; return m && ((m.pHome >= m.pAway) === (l.team === l.home)); });
+      const ours = SLIP.every(l => { const m = S.model.games[l.gid]; return m && l.line == null && ((m.pHome >= m.pAway) === (l.team === l.home)); });
       const b = { type: "parlay", legs: SLIP.map(l => ({ ...l })), date: SLIP.map(l => l.date).sort()[0], stake: Math.round(stake * 100) / 100, mult: Math.round(pmx.x * 100) / 100, ourPick: ours, at: new Date().toISOString() };
       $("px-save").disabled = true;
       try { await saveBet(b); } catch (er) { $("px-save").disabled = false; toast("Couldn't save the parlay. Try again."); return; }
@@ -632,11 +646,11 @@ $("slipbar").addEventListener("click", openParlay);
 const lockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="3"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>`;
 function callFor(B) { const mu = multFor(B.m, B.side, B.g.id + ":" + B.side); return mu ? { mu, d: decide(B.p, mu.x, mu.typed) } : null; }
 function betCard(B) {
-  const c = callFor(B), news = c && c.d && c.d.k === "news";
+  const c = B.line != null ? B.c : callFor(B), news = c && c.d && c.d.k === "news";
   return `<article class="bet" data-gid="${esc(B.g.id)}" tabindex="0" aria-label="Take this bet: ${esc(full(B.team))}, ${pct(B.p)} chance to win. Tap for details.">
-    <div class="lab"><span class="hd">Take this bet</span><button class="plus${inSlip(B.g.id, B.team) ? " in" : ""}" data-addleg="${esc(B.g.id)}" data-team="${esc(B.team)}" aria-label="${inSlip(B.g.id, B.team) ? "Remove from" : "Add to"} parlay">${inSlip(B.g.id, B.team) ? "✓" : "+"}</button></div>
+    <div class="lab"><span class="hd">Take this bet</span><button class="plus${inSlip(B.g.id, B.team) ? " in" : ""}" data-addleg="${esc(B.g.id)}" data-team="${esc(B.team)}" data-line="${B.line ?? ""}" aria-label="${inSlip(B.g.id, B.team) ? "Remove from" : "Add to"} parlay">${inSlip(B.g.id, B.team) ? "✓" : "+"}</button></div>
     <div class="row">${badge(B.team)}<div class="pc"><b>${pct(B.p)}</b><small>to win</small></div></div>
-    <div><div class="tm">${esc(nick(B.team))}</div><div class="gm">${B.atHome ? "vs" : "at"} ${esc(nick(B.opp))}<br>${esc(whenTxt(B.g))}</div>
+    <div><div class="tm">${esc(nl(B.team, B.line))}</div><div class="gm">${B.atHome ? "vs" : "at"} ${esc(nick(B.opp))}<br>${esc(whenTxt(B.g))}</div>
       ${c && c.d ? `<div style="margin-top:7px"><span class="pill ${c.d.k}">${esc(c.d.pill)}</span></div>` : `<div style="margin-top:7px"><span class="pill">worth it at ${fmtX(minMult(B.p))}+</span></div>`}</div>
   </article>`;
 }
@@ -702,7 +716,7 @@ function renderBets() {
 $("v-bets").addEventListener("click", e => {
   if (e.target.closest("a.go")) return;
   const go = e.target.closest("[data-go]"); if (go) { setView(go.dataset.go, true); const an = go.dataset.anchor; if (an) setTimeout(() => { const el = $(an); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 350); return; }
-  const al = e.target.closest("[data-addleg]"); if (al) { const g = allGames().find(x => x.id === al.dataset.addleg); if (g) toggleLeg(g, al.dataset.team); return; }
+  const al = e.target.closest("[data-addleg]"); if (al) { const g = allGames().find(x => x.id === al.dataset.addleg); if (g) toggleLeg(g, al.dataset.team, al.dataset.line); return; }
   const sg = e.target.closest("[data-sugg]"); if (sg) { SLIP = sg.dataset.sugg.split(",").map(s2 => { const [gid, team] = s2.split("|"), g = allGames().find(x => x.id === gid); return { gid, date: g.date, away: g.away, home: g.home, team }; }); SLIP_X = ""; saveSlip(); renderBets(); openParlay(); return; }
   const tk = e.target.closest("[data-took]"); if (tk) { openSheet(tk.dataset.took, { bet: true, team: tk.dataset.team }); return; }
   const op = e.target.closest("[data-open]"); if (op) { openSheet(op.dataset.open); return; }
@@ -1050,11 +1064,45 @@ async function saveUnit(u) {
 }
 const money = (x, sign) => (sign && x > 0 ? "+" : x < 0 ? "−" : "") + "$" + Math.abs(x).toFixed(2).replace(/\.00$/, "");
 const units = x => { const u = x / (S.unit || 10); return (u > 0 ? "+" : u < 0 ? "−" : "") + Math.abs(u).toFixed(1).replace(/\.0$/, "") + "u"; };
+/* ---------------- Puck lines (±1.5) ----------------
+   A bet or parlay leg with a `line` (-1.5 or +1.5) is a puck-line pick: it wins when the team's final margin plus the
+   line is above 0 (a shootout win counts as a 1-goal win, as on every sportsbook). Chances come from the engine's
+   calibrated win-by-2 numbers (m.pl); prices from the sportsbook puck line when posted, or the multiplier you type. */
+const lineTxt = x => x == null || x === "" ? "" : ` ${Number(x) > 0 ? "+" : "−"}${Math.abs(Number(x))}`;
+const nl = (team, line) => nick(team) + lineTxt(line);
+function covers(team, home, line, ag, hg) { const mg = team === home ? hg - ag : ag - hg; return line == null ? mg > 0 : mg + Number(line) > 0; }
+function plProb(m, team, home, line) {
+  const pl = m && m.pl; if (!pl || line == null) return null;
+  const mine = team === home ? pl.home : pl.away, theirs = team === home ? pl.away : pl.home;
+  return Number(line) < 0 ? mine : 1 - theirs;
+}
+function plEst(m, team, home, line) {   // estimated multiplier from the sportsbook puck line, only for the same line
+  const k = m && m.market && m.market.pl; if (!k || line == null) return null;
+  const isH = team === home, l = isH ? k.homeLine : k.awayLine, pr = isH ? k.homePrice : k.awayPrice;
+  return l === Number(line) && pr ? Math.floor(100 / implied(pr)) / 100 : null;
+}
+function plMkt(m, team, home, line) { const k = m && m.market && m.market.pl; if (!k || line == null) return null; const isH = team === home; return (isH ? k.homeLine : k.awayLine) === Number(line) ? (isH ? k.pHome : k.pAway) : null; }
+const plKey = (gid, side, line) => `${gid}:${side}:${Number(line) > 0 ? "p" : "m"}15`;
+function plMultFor(m, team, home, line, key) { const v = PRICES[key]; if (v != null && v !== "" && Number(v) >= 1.01) return { x: Number(v), typed: true }; const e = plEst(m, team, home, line); return e ? { x: e, typed: false } : null; }
+function liveCover(gid, team, home, line) {   // live chance a puck-line pick covers; moneyline picks use teamLive
+  if (line == null) return teamLive(gid, team, home);
+  const l = liveOf(gid); if (!l || !l.live) return null;
+  const m = (S.model && S.model.games && S.model.games[gid]) || {}, led = (S.ledger || {})[gid], o = led && led.official;
+  const ph = o ? o.pHome : m.pHome ?? .5, xh = m.xgHome || 3.0, xa = m.xgAway || 2.9, pOT = .5 + (ph - .5) * .6;
+  const pOTt = team === home ? pOT : 1 - pOT, ln = Number(line), sgn = team === home ? 1 : -1;
+  const otCover = pOTt * (1 + ln > 0 ? 1 : 0) + (1 - pOTt) * (-1 + ln > 0 ? 1 : 0);   // OT/shootout always ends by 1
+  const per = l.period || 1, mmss = String(l.clock || "20:00").split(":"), left = l.inIntermission ? 0 : (+mmss[0] || 0) + (+mmss[1] || 0) / 60;
+  const d0 = (l.hg || 0) - (l.ag || 0);
+  if (per >= 4) { const mg = sgn * d0; return mg !== 0 ? (mg + ln > 0 ? 1 : 0) : otCover; }
+  const f = Math.max(0, (3 - per) * 20 + left) / 60, lh = xh * f, la = xa * f; let p = 0;
+  for (let i = 0; i <= 12; i++) { const pi = pois(lh, i); for (let j = 0; j <= 12; j++) { const pj = pi * pois(la, j), mg = sgn * (d0 + i - j); p += pj * (mg === 0 ? otCover : (mg + ln > 0 ? 1 : 0)); } }
+  return Math.min(.98, Math.max(.02, p));
+}
 function legStatus(l) {
   const L = (S.ledger || {})[l.gid], r = L && L.result;
   if (r && r.void) return "void";
-  if (r) return r.winner === l.team ? "won" : "lost";
-  const lv = liveOf(l.gid); if (lv && lv.final && lv.ag != null && lv.hg != null && lv.ag !== lv.hg) return (lv.ag > lv.hg ? l.away : l.home) === l.team ? "won" : "lost";
+  if (r) return (l.line == null ? r.winner === l.team : covers(l.team, l.home, l.line, r.ag, r.hg)) ? "won" : "lost";
+  const lv = liveOf(l.gid); if (lv && lv.final && lv.ag != null && lv.hg != null && lv.ag !== lv.hg) return covers(l.team, l.home, l.line, lv.ag, lv.hg) ? "won" : "lost";
   const g = allGames().find(x => x.id === l.gid); return g && Date.now() < Date.parse(g.startUTC) ? "soon" : "live";
 }
 function betStatus(b) {   // graded from the same final scores the Results tab uses
@@ -1063,23 +1111,23 @@ function betStatus(b) {   // graded from the same final scores the Results tab u
     if (ls.includes("void")) return { k: "void", won: false, profit: 0, score: "a game was called off, stake returned" };   // simplification: a void leg refunds the whole entry
     if (ls.includes("lost")) return { k: "lost", won: false, profit: -b.stake, score: `${won} of ${n} won` };
     if (won === n) return { k: "won", won: true, profit: b.stake * (b.mult - 1), score: `all ${n} won` };
-    const hit = b.legs.reduce((acc, l, i) => { if (ls[i] === "won") return acc; const lp = teamLive(l.gid, l.team, l.home); if (lp != null) return acc * lp;
-      const mm = S.model && S.model.games && S.model.games[l.gid]; const pp = mm ? (l.team === l.home ? mm.pHome : mm.pAway) : .5; return acc * pp; }, 1);
+    const hit = b.legs.reduce((acc, l, i) => { if (ls[i] === "won") return acc; const lp = liveCover(l.gid, l.team, l.home, l.line); if (lp != null) return acc * lp;
+      const mm = S.model && S.model.games && S.model.games[l.gid]; const pp = l.line != null ? (plProb(mm, l.team, l.home, l.line) ?? .5) : mm ? (l.team === l.home ? mm.pHome : mm.pAway) : .5; return acc * pp; }, 1);
     if (ls.includes("live")) return { k: "live", label: `${won ? won + " of " + n + " won · " : ""}${pct(hit)} to hit`, lp: hit };
     return { k: ls.includes("live") ? "live" : "soon", label: won ? `${won} of ${n} won so far` : ls.includes("live") ? "Games on" : "Not started" };
   }
   const L = (S.ledger || {})[b.gid], r = L && L.result;
   if (r && r.void) return { k: "void", won: false, profit: 0, score: "game called off, stake returned" };
-  if (r) { const won = r.winner === b.team; return { k: won ? "won" : "lost", won, profit: won ? b.stake * (b.mult - 1) : -b.stake, score: `${r.ag}–${r.hg}${r.ot ? " OT" : ""}` }; }
+  if (r) { const won = b.line == null ? r.winner === b.team : covers(b.team, b.home, b.line, r.ag, r.hg); return { k: won ? "won" : "lost", won, profit: won ? b.stake * (b.mult - 1) : -b.stake, score: `${r.ag}–${r.hg}${r.ot ? " OT" : ""}` }; }
   const lv = liveOf(b.gid);
-  if (lv && lv.final && lv.ag != null && lv.hg != null && lv.ag !== lv.hg) { const winner = lv.ag > lv.hg ? b.away : b.home, won = winner === b.team; return { k: won ? "won" : "lost", won, profit: won ? b.stake * (b.mult - 1) : -b.stake, score: `${lv.ag}–${lv.hg}${lv.ot ? " OT" : ""} (live feed)` }; }
+  if (lv && lv.final && lv.ag != null && lv.hg != null && lv.ag !== lv.hg) { const won = covers(b.team, b.home, b.line, lv.ag, lv.hg); return { k: won ? "won" : "lost", won, profit: won ? b.stake * (b.mult - 1) : -b.stake, score: `${lv.ag}–${lv.hg}${lv.ot ? " OT" : ""} (live feed)` }; }
   const g = allGames().find(x => x.id === b.gid), start = g ? Date.parse(g.startUTC) : NaN, now = Date.now();
-  if (lv && lv.live) { const lp = teamLive(b.gid, b.team, b.home); return { k: "live", label: liveTxt(b.gid) + (lp != null ? ` · ${pct(lp)} to win` : ""), lp }; }
+  if (lv && lv.live) { const lp = liveCover(b.gid, b.team, b.home, b.line); return { k: "live", label: liveTxt(b.gid) + (lp != null ? ` · ${pct(lp)} to ${b.line == null ? "win" : "cover"}` : ""), lp }; }
   if (now < start) return { k: "soon", label: `Starts ${fmtTime(g.startUTC)}` };
   if (now < start + 3.5 * 36e5) return { k: "live", label: "Game on now" };
   return { k: "wait", label: "final comes with the next update" };
 }
-const betLabel = b => b.type === "parlay" ? b.legs.map(l => nick(l.team)).join(" + ") : nick(b.team);
+const betLabel = b => b.type === "parlay" ? b.legs.map(l => nl(l.team, l.line)).join(" + ") : nl(b.team, b.line);
 function betsList() { return Object.entries(S.bets || {}).map(([id, b]) => ({ id, ...b })).sort((a, b) => (a.date + a.at) < (b.date + b.at) ? -1 : 1); }
 
 function graph(rows) {   // rows: settled bets in order -> running profit line + one bar per bet
@@ -1103,24 +1151,25 @@ function graph(rows) {   // rows: settled bets in order -> running profit line +
 function legNow(l) {
   const lv = liveOf(l.gid), L = (S.ledger || {})[l.gid], r = L && L.result, g = allGames().find(x => x.id === l.gid);
   const m = S.model && S.model.games && S.model.games[l.gid], o = L && L.official;
-  const ph = o ? o.pHome : m ? m.pHome : .5, pre = l.team === l.home ? ph : 1 - ph;
+  const ph = o ? o.pHome : m ? m.pHome : .5, pre0 = l.team === l.home ? ph : 1 - ph, pre = l.line != null ? (plProb(o && o.pl ? o : m, l.team, l.home, l.line) ?? pre0) : pre0;
   if (r && r.void) return { k: "void", p: null, line: "called off" };
   const fin = r ? { ag: r.ag, hg: r.hg, ot: r.ot, w: r.winner } : lv && lv.final && lv.ag !== lv.hg ? { ag: lv.ag, hg: lv.hg, ot: lv.ot, w: lv.ag > lv.hg ? l.away : l.home } : null;
-  if (fin) return { k: fin.w === l.team ? "won" : "lost", p: fin.w === l.team ? 1 : 0, line: `final ${l.away} ${fin.ag}–${fin.hg} ${l.home}${fin.ot ? " ot" : ""}` };
-  if (lv && lv.live) return { k: "live", p: teamLive(l.gid, l.team, l.home) ?? pre, line: `${l.away} ${lv.ag}–${lv.hg} ${l.home} · ${liveTxt(l.gid).replace(/^\d+–\d+ · /, "")}` };
+  const ok = fin && (l.line == null ? fin.w === l.team : covers(l.team, l.home, l.line, fin.ag, fin.hg));
+  if (fin) return { k: ok ? "won" : "lost", p: ok ? 1 : 0, line: `final ${l.away} ${fin.ag}–${fin.hg} ${l.home}${fin.ot ? " ot" : ""}` };
+  if (lv && lv.live) return { k: "live", p: liveCover(l.gid, l.team, l.home, l.line) ?? pre, line: `${l.away} ${lv.ag}–${lv.hg} ${l.home} · ${liveTxt(l.gid).replace(/^\d+–\d+ · /, "")}` };
   if (g && Date.now() < Date.parse(g.startUTC)) return { k: "soon", p: pre, line: `${l.away} at ${l.home} · ${whenTxt(g).toLowerCase()}` };
   return { k: "wait", p: pre, line: `${l.away} at ${l.home} · waiting for the final` };
 }
 function slipCard(b) {
-  const legs = b.type === "parlay" ? b.legs : [{ gid: b.gid, team: b.team, away: b.away, home: b.home }];
+  const legs = b.type === "parlay" ? b.legs : [{ gid: b.gid, team: b.team, away: b.away, home: b.home, line: b.line }];
   const now = legs.map(legNow), live = now.some(x => x.k === "live");
   const hit = now.every(x => x.p != null) ? now.reduce((a, x) => a * x.p, 1) : null;
   const pays = b.stake * b.mult;
   const chip = live ? `<span class="livepill"><i></i>live</span>` : now.every(x => x.k === "soon") ? `<span>${esc(now[0].line.split(" · ").pop())}</span>` : `<span>in progress</span>`;
-  const legRow = (l, x) => `<div class="sleg ${x.k}" data-gid="${esc(l.gid)}">${badge(l.team, "s")}<div class="sl"><b>${esc(nick(l.team))} to win</b><small>${esc(x.line)}</small></div><span class="sp">${x.k === "won" ? "✓" : x.k === "lost" ? "✗" : x.p != null ? pct(x.p) : "–"}</span></div>`;
+  const legRow = (l, x) => `<div class="sleg ${x.k}" data-gid="${esc(l.gid)}">${badge(l.team, "s")}<div class="sl"><b>${esc(nl(l.team, l.line))}${l.line == null ? " to win" : ""}</b><small>${esc(x.line)}</small></div><span class="sp">${x.k === "won" ? "✓" : x.k === "lost" ? "✗" : x.p != null ? pct(x.p) : "–"}</span></div>`;
   return `<div class="slip${live ? " on" : ""}">
     <div class="stop">${chip}<span>${money(b.stake)} → <b>${money(pays)}</b></span></div>
-    <div class="stitle">${b.type === "parlay" ? `${legs.length}-pick parlay · ${fmtX(b.mult)}` : `${esc(nick(b.team))} · ${fmtX(b.mult)}`}</div>
+    <div class="stitle">${b.type === "parlay" ? `${legs.length}-pick parlay · ${fmtX(b.mult)}` : `${esc(nl(b.team, b.line))} · ${fmtX(b.mult)}`}</div>
     <div class="slegs">${legs.map((l, i) => legRow(l, now[i])).join("")}</div>
     ${hit != null ? `<div class="shit"><div class="sbar"><i style="width:${Math.round(hit * 100)}%"></i></div><span><b>${pct(hit)}</b> to hit${live ? " right now" : ""}</span></div>` : ""}
   </div>`;
@@ -1130,7 +1179,7 @@ function renderMine() {
   const all = betsList().map(b => ({ ...b, st: betStatus(b) }));
   const done = all.filter(b => isDone(b.st)), open = all.filter(b => !isDone(b.st));
   const row = b => b.type === "parlay" ? `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.legs[0].gid)}"><span class="stack">${b.legs.slice(0, 2).map(l => badge(l.team, "s")).join("")}</span><span class="g">${money(b.stake)} parlay at ${fmtX(b.mult)}<small>${esc(betLabel(b))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : `<span class="pill">called off · $0</span>`}</span></button>`
-    : `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : `<span class="pill">called off · $0</span>`}</span></button>`;
+    : `<button class="hrow up ${b.st.k === "won" || b.st.k === "lost" ? b.st.k : ""}" data-gid="${esc(b.gid)}">${badge(b.team, "s")}<span class="g">${money(b.stake)} on ${esc(nl(b.team, b.line))} at ${fmtX(b.mult)}<small>${esc(nick(b.team === b.home ? b.away : b.home))} · ${esc(dayObj(b.date).toLocaleDateString([], { month: "short", day: "numeric" }))}${b.st.score ? " · final " + esc(b.st.score) : ""}</small></span><span class="pk">${b.st.k === "won" ? `<b>${money(b.st.profit, true)}</b>` : b.st.k === "lost" ? `<b style="color:var(--dim)">${money(b.st.profit, true)}</b>` : `<span class="pill">called off · $0</span>`}</span></button>`;
   const liveFirst = open.slice().sort((a, b) => (legNow(a.type === "parlay" ? a.legs[0] : a).k === "live" ? 0 : 1) - (legNow(b.type === "parlay" ? b.legs[0] : b).k === "live" ? 0 : 1));
   v.innerHTML = `
     <div><h1>My bets</h1><p class="sub">open bets track live. wins and losses settle on their own.</p></div>
@@ -1204,12 +1253,12 @@ function openSheet(id, opts) {
   const started = Date.now() > Date.parse(g.startUTC), scoreOnly = !!(opts && opts.score), lv = liveOf(g.id);
   $("sheet-card").onclick = null; $("sheet-card").oninput = null;
   const myBets = betsList().filter(b => b.gid === g.id);
-  const form = { team: (opts && opts.team) || fav, stake: S.unit, mult: null, open: !!(opts && opts.bet) };
-  const multFor2 = t => { const sd = t === g.home ? "home" : "away", k = g.id + ":" + sd, mu = multFor(m, sd, k); return mu ? mu.x : null; };
+  const form = { team: (opts && opts.team) || fav, line: opts && opts.line != null ? opts.line : null, stake: S.unit, mult: null, open: !!(opts && opts.bet) };
+  const multFor2 = t => { const sd = t === g.home ? "home" : "away", k = g.id + ":" + sd, mu = form.line == null ? multFor(m, sd, k) : plMultFor(m, t, g.home, form.line, plKey(g.id, sd, form.line)); return mu ? mu.x : null; };
   function betBox() {
     const mine = myBets.map(b => { const st = betStatus(b);
       return `<div class="mybet ${st.k === "won" || st.k === "lost" ? st.k : ""}"><div class="top2"><span>Your bet</span><span>${st.k === "won" ? "Won ✓" : st.k === "lost" ? "Lost" : st.k === "void" ? "Called off" : esc(st.label)}</span></div>
-        <div class="main">${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}</div>
+        <div class="main">${money(b.stake)} on ${esc(nl(b.team, b.line))} at ${fmtX(b.mult)}</div>
         <div class="st">${st.k === "won" ? `Paid back <b>${money(b.stake * b.mult)}</b> (${money(st.profit, true)})` : st.k === "lost" ? `Lost <b>${money(b.stake)}</b>` : st.k === "void" ? `<b>${money(b.stake)}</b> returned` : `If it wins: <b>${money(b.stake * b.mult)}</b> back (${money(b.stake * (b.mult - 1), true)})`}</div>
         <button class="linkbtn" data-del="${esc(b.id)}">Remove this bet</button></div>`; }).join("");
     if (led && led.result) return mine;
@@ -1220,6 +1269,7 @@ function openSheet(id, opts) {
     const x = form.mult ?? multFor2(form.team) ?? "";
     return mine + `<div class="betform box">
       <div class="pickteam">${[g.away, g.home].map(t => `<button data-team="${t}" aria-pressed="${form.team === t}">${badge(t, "s")}${esc(nick(t))}</button>`).join("")}</div>
+      <div class="pickteam pickline">${[[null, "to win"], [-1.5, "−1.5"], [1.5, "+1.5"]].map(([ln, t]) => `<button data-pline="${ln ?? ""}" aria-pressed="${form.line === ln}">${t}</button>`).join("")}</div>
       <div class="fields">
         <label class="field"><span>I put down</span><div><i>$</i><input id="bt-stake" inputmode="decimal" value="${form.stake}"></div></label>
         <label class="field"><span>Multiplier</span><div><input id="bt-mult" inputmode="decimal" value="${x ? Number(x).toFixed(2) : ""}" placeholder="1.50"><i>x</i></div></label>
@@ -1231,14 +1281,25 @@ function openSheet(id, opts) {
   }
   function payLine() {
     const st = Number(($("bt-stake") || {}).value), mu = Number(($("bt-mult") || {}).value), ok = st > 0 && mu >= 1.01;
-    if ($("bt-pay")) $("bt-pay").innerHTML = ok ? `If ${esc(nick(form.team))} wins: <b>${money(st * mu)}</b> back (${money(st * (mu - 1), true)})` : `<span class="m">Type how much you put down and the multiplier.</span>`;
+    if ($("bt-pay")) $("bt-pay").innerHTML = ok ? `If ${esc(nl(form.team, form.line))} ${form.line == null ? "wins" : "covers"}: <b>${money(st * mu)}</b> back (${money(st * (mu - 1), true)})` : `<span class="m">Type how much you put down and the multiplier.</span>`;
     if ($("bt-save")) $("bt-save").disabled = !ok;
   }
   function drawBet() { $("betbox").innerHTML = betBox(); payLine(); }
   const other = fav === g.home ? g.away : g.home;
+  function plBox() {   // puck line: the team giving 1.5 goals (sportsbook's side when posted, else our favourite) and the one getting it
+    const mk = m.market && m.market.pl, giv = mk ? (mk.homeLine < 0 ? g.home : g.away) : fav, get = giv === g.home ? g.away : g.home;
+    const rows = [[giv, -1.5], [get, 1.5]].map(([t, ln]) => {
+      const sd = t === g.home ? "home" : "away", pr = plProb(m, t, g.home, ln), mu = plMultFor(m, t, g.home, ln, plKey(g.id, sd, ln)), d = mu && decide(pr, mu.x, mu.typed);
+      const inT = SLIP.some(l => l.gid === g.id && l.team === t && l.line === ln);
+      return `<div class="plrow">${badge(t, "s")}<div class="pln"><b>${esc(nl(t, ln))}</b><span class="m">${pct(pr)} chance${mu ? ` · ${mu.typed ? "" : "about "}${fmtX(mu.x)}` : ""}</span></div>
+        <span class="pill ${d ? d.k : ""}">${esc(d ? d.pill : `worth it at ${fmtX(minMult(pr))}+`)}</span>
+        <div class="plb"><button class="plus${inT ? " in" : ""}" data-plleg="${t}" data-line="${ln}" aria-label="${inT ? "Remove" : "Add"} ${esc(nl(t, ln))} ${inT ? "from" : "to"} parlay">${inT ? "✓" : "+"}</button><button class="pltook" data-pltook="${t}" data-line="${ln}">i took ${esc(nl(t, ln))}</button></div></div>`;
+    }).join("");
+    return `<div><b>Puck line</b><br><span class="m">−1.5 wins by 2 or more · +1.5 wins, or loses by just 1</span></div>${rows}`;
+  }
   function legBox() {
     const inT = SLIP.find(l => l.gid === g.id);
-    return `<button class="addleg${inT ? " in" : ""}" data-leg="${esc(inT ? inT.team : fav)}">${inT ? `✓ ${esc(nick(inT.team))} is in your parlay · remove` : `+ Add ${esc(nick(fav))} to a parlay`}</button>
+    return `<button class="addleg${inT ? " in" : ""}" data-leg="${esc(inT ? inT.team : fav)}" data-line="${inT && inT.line != null ? inT.line : ""}">${inT ? `✓ ${esc(nl(inT.team, inT.line))} is in your parlay · remove` : `+ Add ${esc(nick(fav))} to a parlay`}</button>
       ${inT ? "" : `<button class="alt" data-leg="${esc(other)}">or add ${esc(nick(other))} instead</button>`}`;
   }
   const gsrc = o && o.inputsAsOf && o.inputsAsOf.goalies && String(o.inputsAsOf.goalies).match(/pulled ([^)]+)/);
@@ -1265,6 +1326,7 @@ function openSheet(id, opts) {
       <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
       <div id="legbox" style="display:grid;gap:8px;justify-items:center">${legBox()}</div>
     </div>` : ""}
+    ${!started && m && m.pl && !scoreOnly ? `<div class="box" id="plbox" style="gap:12px">${plBox()}</div>` : ""}
     ${led && led.result && !myBets.length ? "" : `<div id="betbox">${betBox()}</div>`}
     ${fac ? `<h3 class="sec">Why we like ${esc(nick(fav))}</h3><div class="why">${fac}</div>` : ""}
     ${m ? `<p class="m" style="margin:0;color:var(--muted);font-size:13.5px">Score guess: ${esc(nick(g.away))} ${m.xgAway.toFixed(1)}, ${esc(nick(g.home))} ${m.xgHome.toFixed(1)}</p>` : ""}
@@ -1278,7 +1340,13 @@ function openSheet(id, opts) {
   $("sheet").hidden = false; document.body.style.overflow = "hidden";
   $("sheet-card").querySelector(".x").focus();
   const lb = $("legbox");
-  if (lb) lb.addEventListener("click", e => { const t = e.target.closest("[data-leg]"); if (!t) return; toggleLeg(g, t.dataset.leg); lb.innerHTML = legBox(); });
+  if (lb) lb.addEventListener("click", e => { const t = e.target.closest("[data-leg]"); if (!t) return; toggleLeg(g, t.dataset.leg, t.dataset.line); lb.innerHTML = legBox(); const pb2 = $("plbox"); if (pb2) pb2.innerHTML = plBox(); });
+  const pb = $("plbox");
+  if (pb) pb.addEventListener("click", e => {
+    const a = e.target.closest("[data-plleg]"); if (a) { toggleLeg(g, a.dataset.plleg, Number(a.dataset.line)); pb.innerHTML = plBox(); if (lb) lb.innerHTML = legBox(); return; }
+    const t = e.target.closest("[data-pltook]"); if (t) { form.team = t.dataset.pltook; form.line = Number(t.dataset.line); form.mult = null; form.open = true; drawBet();
+      const bx = $("betbox"); if (bx) { bx.scrollIntoView({ block: "center" }); const i = $("bt-stake"); if (i) i.focus({ preventScroll: true }); } }
+  });
   const bb = $("betbox");
   if (bb) {
     payLine();
@@ -1287,17 +1355,18 @@ function openSheet(id, opts) {
       if (e.target.closest("[data-slip]")) { closeSheet(); setView("mine", true); setTimeout(() => openSheet(g.id, { bet: true }), 250); return; }
       if (e.target.closest("[data-took]")) { form.open = true; drawBet(); const i = $("bt-stake"); if (i) i.focus(); return; }
       if (e.target.closest("[data-cancel]")) { form.open = false; drawBet(); return; }
+      const pln = e.target.closest("[data-pline]"); if (pln) { form.stake = Number($("bt-stake").value) || form.stake; form.line = pln.dataset.pline === "" ? null : Number(pln.dataset.pline); form.mult = null; drawBet(); return; }
       const t = e.target.closest("[data-team]"); if (t) { form.stake = Number($("bt-stake").value) || form.stake; form.team = t.dataset.team; form.mult = null; drawBet(); return; }
       const del = e.target.closest("[data-del]");
       if (del) { try { await removeBet(del.dataset.del); } catch (er) { toast("Couldn't remove that bet. Try again."); return; } myBets.splice(myBets.findIndex(b => b.id === del.dataset.del), 1); drawBet(); renderMine(); renderResults(); return; }
       if (e.target.closest("#bt-save")) {
         const stake = Number($("bt-stake").value), mult = Number($("bt-mult").value);
         if (!(stake > 0 && mult >= 1.01)) return;
-        const b = { gid: g.id, date: g.date, away: g.away, home: g.home, team: form.team, stake: Math.round(stake * 100) / 100, mult: Math.round(mult * 100) / 100, ourPick: form.team === fav, at: new Date().toISOString() };
+        const b = { gid: g.id, date: g.date, away: g.away, home: g.home, team: form.team, ...(form.line != null ? { line: form.line } : {}), stake: Math.round(stake * 100) / 100, mult: Math.round(mult * 100) / 100, ourPick: form.team === fav && form.line == null, at: new Date().toISOString() };
         $("bt-save").disabled = true;
         try { await saveBet(b); } catch (er) { $("bt-save").disabled = false; toast("Couldn't save the bet. Check your connection and try again."); return; }
         myBets.push({ id: "new", ...b }); form.open = false; drawBet(); renderMine(); renderResults(); renderBets();
-        toast(`<b>Saved.</b> ${money(b.stake)} on ${esc(nick(b.team))} at ${fmtX(b.mult)}. It's in My bets.`, 5000);
+        toast(`<b>Saved.</b> ${money(b.stake)} on ${esc(nl(b.team, b.line))} at ${fmtX(b.mult)}. It's in My bets.`, 5000);
       }
     });
     bb.addEventListener("input", e => {
@@ -1325,7 +1394,7 @@ function staleHtml() {   // shown at the top of home when the last successful up
 }
 const agoTxt = h => h < 1 ? "less than an hour" : h < 48 ? `${Math.round(h)} hours` : `${Math.round(h / 24)} days`;
 let DB_STATE = "connecting";
-const APP_VERSION = "1.1";   // bump with every release
+const APP_VERSION = "1.2";   // bump with every release
 function renderFoot() {
   $("foot").innerHTML = `<span><a href="tel:18004262537">1-800-gambler</a> · lockski.ai v${APP_VERSION}</span>`;
 }

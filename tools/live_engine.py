@@ -149,6 +149,8 @@ def main():
     (W / "increments.json").write_text(json.dumps(inc)); (W / "ledger.json").write_text((DATA / "ledger.json").read_text() if (DATA / "ledger.json").exists() else "{}")
     if (DATA / "xg_games.json").exists():
         shutil.copy(DATA / "xg_games.json", W / "xg_games.json")
+    if (INP / "recent.json").exists():
+        shutil.copy(INP / "recent.json", W / "recent.json")   # last 10 games per team for recent form
     r = subprocess.run([sys.executable, str(ROOT / "engine" / "run.py"), str(W)], capture_output=True, text=True)
     if r.returncode != 0:
         errors.append("engine: " + (r.stderr or r.stdout)[-600:])

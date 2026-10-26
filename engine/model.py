@@ -69,6 +69,26 @@ MONTHS = {m: i for i, m in enumerate(["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
 
 warnings = []
 
+import difflib, unicodedata
+def _nm(x):
+    x = unicodedata.normalize("NFKD", str(x)).encode("ascii", "ignore").decode().lower().replace("-", " ").replace(".", "")
+    return " ".join(x.split())
+def match_name(name, candidates):
+    """Same person across sources that spell names differently (accents, 'Merilainen' vs 'Merilinen', Mitch/Mitchell).
+    Exact first, then accent-free, then a close spelling (ratio >= 0.85) with the same first initial. Only ever
+    called with candidates from the same team, so two different players can't be confused."""
+    cands = list(candidates)
+    if name in cands: return name
+    n = _nm(name); by = {_nm(c): c for c in cands}
+    if n in by: return by[n]
+    best, score = None, 0.0
+    for c in cands:
+        cn = _nm(c)
+        if not cn or not n or cn[0] != n[0]: continue
+        r = difflib.SequenceMatcher(None, n, cn).ratio()
+        if r > score: best, score = c, r
+    return best if score >= 0.85 else None
+
 # ---------------- Load ----------------
 teams = pd.read_csv(D / "teams_cur.csv")
 goalies = pd.read_csv(D / "goalies_cur.csv")
@@ -210,11 +230,15 @@ def prior_ratio(side):
 # results accumulate: weight = 0.30 * min(1, games/10), and nothing until a team has 5 recorded games.
 RECENT_W, RECENT_N, RECENT_MIN = 0.30, 10, 5
 recent_used = {}
-if inc_games:
+# Live source: every finished game of the last 35 days from the NHL score feed (RECENT_FILE), so recent form works from
+# the start of the season instead of waiting for 5 games after the snapshot. Falls back to the post-snapshot games.
+_rf = Path(os.environ["RECENT_FILE"]) if os.environ.get("RECENT_FILE") else None
+recent_games = json.loads(_rf.read_text()).get("games", []) if _rf and _rf.exists() else inc_games
+if recent_games:
     lg_sog = cur["all"].shotsOnGoalFor.sum() / GP.sum()
     lg_gpg = cur["all"].goalsFor.sum() / GP.sum()
     for t in IDX:
-        mine = [g_ for g_ in sorted(inc_games, key=lambda x: x["date"]) if t in (g_["away"], g_["home"])][-RECENT_N:]
+        mine = [g_ for g_ in sorted(recent_games, key=lambda x: x["date"]) if t in (g_["away"], g_["home"])][-RECENT_N:]
         if len(mine) < RECENT_MIN:
             continue
         sf = sa = gf = ga = 0.0
@@ -353,7 +377,8 @@ def goalie_effect(team, gdate, starter=None, status=None):
         d["w"] = d.icetime
     blend = float((d.w * d.eff).sum() / d.w.sum())
     if starter:
-        row = d[d.name == starter]
+        mn = match_name(starter, d.name.tolist())
+        row = d[d.name == mn] if mn else d.iloc[0:0]
         if row.empty:
             he = hist_eff(starter)
             if he is None:
@@ -393,6 +418,9 @@ for x in inj:
     if x["pos"] == "G":
         continue
     r = pv.get((x["team"], x["name"]))
+    if r is None:
+        mn = match_name(x["name"], [k[1] for k in pv if k[0] == x["team"]])
+        r = pv.get((x["team"], mn)) if mn else None
     if r is None:
         unmatched.append(f'{x["name"]} ({x["team"]})')   # hasn't played this season: already absent from team stats
         continue
@@ -576,7 +604,7 @@ for i, t in enumerate(sorted(out_teams, key=lambda t: -out_teams[t]["rating"]), 
     out_teams[t]["rank"] = i
 
 model = {
-    "version": "v0.6", "newGamesApplied": len(inc_games), "recentFormTeams": len(recent_used), "boxScoreCorsiTeamGames": corsi_used[0], "pbpShotQualityTeamGames": pbp_used[0],
+    "version": "v0.6.1", "newGamesApplied": len(inc_games), "recentFormTeams": len(recent_used), "boxScoreCorsiTeamGames": corsi_used[0], "pbpShotQualityTeamGames": pbp_used[0],
     "dataThrough": f"2026-27 to date + 2025-26 prior; goalies: {gd.get('source_goalies') or 'none'}; injuries: {gd.get('source_injuries') or 'none'}",
     "assumptions": {
         "blend5v5": {"xG": W_XG, "corsi": W_CORSI, "fenwick": W_FENWICK, "goals": W_GOALS}, "priorCoef": PRIOR_COEF, "goalieK": K_GOALIE_XGA,

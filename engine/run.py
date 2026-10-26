@@ -15,6 +15,8 @@ import ledger as L
 import market as MK
 
 env = dict(os.environ, ENGINE_DATA=str(E / "data"), INCREMENTS_FILE=str(W / "increments.json"))
+if (W / "recent.json").exists():
+    env["RECENT_FILE"] = str(W / "recent.json")   # every finished game of the last 35 days, for recent form
 if (W / "xg_games.json").exists():
     env["XG_FILE"] = str(W / "xg_games.json")    # exact 5-on-5 shot quality from the NHL play-by-play (web app repo)
 for args, label in [([sys.executable, E / "model.py", W / "model.json", W / "weeks.json", W / "gameday.json", W / "increments.json"], "model"),

@@ -1,0 +1,13 @@
+name: research
+on: { workflow_dispatch: {} }
+permissions: { contents: write }
+jobs:
+  dates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p /tmp/r && cd /tmp/r && python3 $GITHUB_WORKSPACE/tools/research/fetch_dates.py
+          cd $GITHUB_WORKSPACE && git checkout --orphan research-data && git rm -rfq . && cp /tmp/r/research_dates.json . && git add research_dates.json
+          git -c user.name=lockski -c user.email=lockski@users.noreply.github.com commit -qm "research: game dates" && git push -f origin research-data

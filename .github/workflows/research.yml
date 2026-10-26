@@ -1,5 +1,8 @@
 name: research
-on: { workflow_dispatch: {} }
+on:
+  workflow_dispatch:
+    inputs:
+      job: { description: "dates or markets", default: "markets" }
 permissions: { contents: write }
 jobs:
   dates:
@@ -8,6 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p /tmp/r && cd /tmp/r && python3 $GITHUB_WORKSPACE/tools/research/fetch_dates.py
-          cd $GITHUB_WORKSPACE && git checkout --orphan research-data && git rm -rfq . && cp /tmp/r/research_dates.json . && git add research_dates.json
+          mkdir -p /tmp/r && cd /tmp/r
+          if [ "${{ inputs.job }}" = "dates" ]; then python3 $GITHUB_WORKSPACE/tools/research/fetch_dates.py; else python3 $GITHUB_WORKSPACE/tools/research/probe_markets.py; fi
+          cd $GITHUB_WORKSPACE && git checkout --orphan research-data && git rm -rfq . && cp /tmp/r/* . && git add .
           git -c user.name=lockski -c user.email=lockski@users.noreply.github.com commit -qm "research: game dates" && git push -f origin research-data

@@ -64,6 +64,7 @@ def record_forecasts(ledger, weeks, model, now=None, channel="production", input
                     "goalieConfirmed": bool(m.get("goalieConfirmed")),
                     "inputsAsOf": inputs_as_of, "factors": m.get("factors", []),
                     "inputsMissing": m.get("inputsMissing", []),
+                    "pl": m.get("pl"), "marketPL": (m.get("market") or {}).get("pl"),
                     "market": (m.get("market") or {}).get("pHome"),    # sportsbook no-vig home price at lock time
                     "marketML": [(m.get("market") or {}).get("awayML"), (m.get("market") or {}).get("homeML")] if m.get("market") else None}
             key = "snapshots" if channel == "production" else "experiments"

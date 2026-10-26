@@ -34,6 +34,14 @@ weeks = json.loads((W / "weeks.json").read_text())
 gameday = json.loads((W / "gameday.json").read_text())
 inc = json.loads((W / "increments.json").read_text())
 led = json.loads((W / "ledger.json").read_text()) if (W / "ledger.json").exists() else {}
+# Puck line (±1.5): P(team wins by 2+) from its win chance, calibrated on 2022-24 finals and checked on 2024-26
+# (engine/data/puckline.json). Empty-net goals and OT/shootout (always 1-goal games) are in the data, not assumed.
+PL = json.loads((E / "data" / "puckline.json").read_text())
+import math
+for g in m.get("games", {}).values():
+    lg = lambda p: math.log(p / (1 - p))
+    by2 = lambda p: round(1 / (1 + math.exp(-(PL["a"] + PL["b"] * lg(min(max(p, 1e-4), 1 - 1e-4))))), 4)
+    g["pl"] = {"home": by2(g["pHome"]), "away": by2(g["pAway"])}   # chance each team wins by 2+ (covers -1.5)
 MK.attach(m, weeks, gameday)                                                 # sportsbook prices ~ PrizePicks Team Pick prices
 now = datetime.now(timezone.utc)
 settled = L.settle(led, inc.get("games", []), now)

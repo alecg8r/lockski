@@ -49,6 +49,14 @@ def attach(model, weeks, gameday):
         ia, ih = implied(aml), implied(hml)
         g["market"] = {"pHome": round(ih / (ia + ih), 4), "pAway": round(ia / (ia + ih), 4),
                        "awayML": int(float(aml)), "homeML": int(float(hml)), "source": od.get("source")}
+        try:   # puck line: [.., date, awayLine, awayPrice, homeLine, homePrice]
+            al, ap, hl, hp = (float(x) for x in row[5:9])
+            if abs(al) == 1.5 and al == -hl and valid_pair(ap, hp):
+                pa, ph = implied(ap), implied(hp)
+                g["market"]["pl"] = {"awayLine": al, "awayPrice": int(ap), "homeLine": hl, "homePrice": int(hp),
+                                     "pAway": round(pa / (pa + ph), 4), "pHome": round(ph / (pa + ph), 4)}
+        except (TypeError, ValueError):
+            pass
         n += 1
     model["marketGames"] = n
     return n

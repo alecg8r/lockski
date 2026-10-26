@@ -132,6 +132,7 @@ def odds(today):
         yr = today.year + (1 if mon == 1 and today.month == 12 else 0) - (1 if mon == 12 and today.month == 1 else 0)
         gdate = f"{yr:04d}-{mon:02d}-{day:02d}"
         col = next((i for i, c in enumerate(head) if "Moneyline" in c), None)
+        pcol = next((i for i, c in enumerate(head) if "Puck Line" in c), None)
         teams = []
         for tr in trs[1:3]:
             cells = [strip(c) for c in re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr, re.S)]
@@ -141,10 +142,14 @@ def odds(today):
             mlm = re.search(r"([+-]\d{3,4})", cells[col])
             if not (ab and mlm):
                 break
-            teams.append((ab, int(mlm.group(1))))
+            plm = re.search(r"([+-]1\.5)\s+([+-]\d{3,4})", cells[pcol]) if pcol is not None and len(cells) > pcol else None
+            teams.append((ab, int(mlm.group(1)), (float(plm.group(1)), int(plm.group(2))) if plm else None))
         if len(teams) == 2:
-            (a, aml), (h, hml) = teams
-            lines.append([a, aml, h, hml, gdate])
+            (a, aml, apl), (h, hml, hpl) = teams
+            row = [a, aml, h, hml, gdate]
+            if apl and hpl and apl[0] == -hpl[0]:
+                row += [apl[0], apl[1], hpl[0], hpl[1]]
+            lines.append(row)
     if not lines:
         raise ValueError("no moneyline rows parsed")
     return url, lines

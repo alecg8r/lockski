@@ -28,8 +28,9 @@ class TestInputs(unittest.TestCase):
 
     def test_odds(self):
         _, lines = F.odds(date(2026, 10, 24))
-        self.assertEqual(lines[0], ["FLA", -180, "CHI", 150, "2026-10-25"])
-        for a, aml, h, hml, d in lines:
+        self.assertEqual(lines[0][:5], ["FLA", -180, "CHI", 150, "2026-10-25"])
+        self.assertEqual(lines[0][5:], [-1.5, 136, 1.5, -161])   # puck line: FLA -1.5 +136, CHI +1.5 -161
+        for a, aml, h, hml, d, *pl in lines:
             self.assertNotEqual(a, h); self.assertGreaterEqual(abs(aml), 100); self.assertGreaterEqual(abs(hml), 100)
 
     def test_abbr(self):

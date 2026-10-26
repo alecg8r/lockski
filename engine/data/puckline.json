@@ -1,0 +1,49 @@
+{
+ "a": -0.8804045099572779,
+ "b": 0.9821375425557675,
+ "fit": "2022-24",
+ "test": "2024-26",
+ "nTest": 5248,
+ "testLogLoss": 0.5947,
+ "naiveLogLoss": 0.5956,
+ "constLogLoss": 0.608,
+ "coverRateTest": 0.2967,
+ "bands": [
+  {
+   "winChance": "30-45%",
+   "n": 1534,
+   "predictedCover": 0.216,
+   "actualCover": 0.223
+  },
+  {
+   "winChance": "45-55%",
+   "n": 2020,
+   "predictedCover": 0.294,
+   "actualCover": 0.294
+  },
+  {
+   "winChance": "55-60%",
+   "n": 801,
+   "predictedCover": 0.357,
+   "actualCover": 0.336
+  },
+  {
+   "winChance": "60-65%",
+   "n": 509,
+   "predictedCover": 0.403,
+   "actualCover": 0.403
+  },
+  {
+   "winChance": "65-70%",
+   "n": 224,
+   "predictedCover": 0.456,
+   "actualCover": 0.415
+  },
+  {
+   "winChance": "70-90%",
+   "n": 80,
+   "predictedCover": 0.52,
+   "actualCover": 0.562
+  }
+ ]
+}

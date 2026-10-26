@@ -62,6 +62,9 @@ if isinstance(model, dict):
         if not (fin(xh) and fin(xa) and xh >= 0 and xa >= 0): errors.append(f"model: bad xG {gid}")
         else: tot += xh + xa
         if g.get("home") == g.get("away"): errors.append(f"model: same team both sides {gid}")
+        pl = g.get("pl")
+        if pl is not None and not all(fin(pl.get(k)) and 0 < pl[k] < 1 for k in ("home", "away")): errors.append(f"model: bad puck line {gid}")
+        if pl is not None and fin(pl.get("home")) and fin(pl.get("away")) and pl["home"] + pl["away"] >= 1: errors.append(f"model: puck lines add past 1 {gid}")
         mk = g.get("market")
         if mk and not (fin(mk.get("pHome")) and 0 < mk["pHome"] < 1): errors.append(f"model: bad market price {gid}")
     if gs and not (5.2 <= tot / len(gs) <= 7.0): errors.append(f"model: scoring level {tot / len(gs):.2f} out of range")

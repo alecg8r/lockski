@@ -62,6 +62,11 @@ if isinstance(model, dict):
         if not (fin(xh) and fin(xa) and xh >= 0 and xa >= 0): errors.append(f"model: bad xG {gid}")
         else: tot += xh + xa
         if g.get("home") == g.get("away"): errors.append(f"model: same team both sides {gid}")
+        for vn, vv in (g.get("venues") or {}).items():
+            if vn == "at": continue
+            for part in ("ml", "pl"):
+                for k_, q in (vv.get(part) or {}).items():
+                    if not (fin(q.get("ask")) and 0 < q["ask"] < 1 and fin(q.get("x")) and q["x"] > 1): errors.append(f"model: bad {vn} price {gid} {k_}")
         pl = g.get("pl")
         if pl is not None and not all(fin(pl.get(k)) and 0 < pl[k] < 1 for k in ("home", "away")): errors.append(f"model: bad puck line {gid}")
         if pl is not None and fin(pl.get("home")) and fin(pl.get("away")) and pl["home"] + pl["away"] >= 1: errors.append(f"model: puck lines add past 1 {gid}")

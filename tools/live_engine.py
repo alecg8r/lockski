@@ -173,6 +173,7 @@ def main():
             led[gid]["result"] = doc["result"]
     try:   # official NHL headshots for hot-list players and starting goalies (tools/rosters.py keeps data/rosters.json)
         sys.path.insert(0, str(ROOT / "tools")); import rosters as RO; RO.attach(m)
+        import fetch_markets as FM; notes.append(f"{FM.attach(m)} games with Kalshi/Polymarket prices")
     except Exception as e:
         notes.append(f"headshots skipped: {e}")
     # only write (and so only commit) when something real changed, so the repo history stays small

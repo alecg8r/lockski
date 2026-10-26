@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>RotoWire.com Latest NHL News</title>
+    <copyright>Copyright (c) 2026 Roto Sports, Inc, All rights reserved.</copyright>
+    <description>Fantasy Sports from RotoWire.com</description>
+    <category>Fantasy Sports</category>
+    <language>en-us</language>
+    <ttl>10</ttl>
+    <image>
+      <title>RotoWire.com Fantasy Sports</title>
+      <width>120</width>
+      <height>30</height>
+      <link>https://www.rotowire.com</link>
+      <url>https://assets.rotowire.com/images/logo_roto_small.gif</url>
+    </image>
+    <link>https://www.rotowire.com</link>
+    <item>
+        <guid>nhl597359</guid>
+        <title>Mats Zuccarello: Won't play Monday</title>
+        <link>https://www.rotowire.com//hockey/player/mats-zuccarello-3495</link>
+        <description>Zuccarello (upper body) won't play against the Rangers on Monday, per Zach Dooley of the Kings' official site.
+
+        Visit RotoWire.com for more analysis on this update.</description>
+        <pubDate>Mon, 26 Oct 2026 8:20:00 AM PDT</pubDate>
+    </item>
+    <item>
+        <guid>nhl597358</guid>
+        <title>James Reimer: First goalie off Monday</title>
+        <link>https://www.rotowire.com//hockey/player/james-reimer-3356</link>
+        <description>Reimer was the first goalie off during Monday's morning skate, Vince Z. Mercogliano of The Athletic reports, indicating that he'll draw the home start against the Kings.
+
+        Visit RotoWire.com for more analysis on this update.</description>
+        <pubDate>Mon, 26 Oct 2026 8:10:00 AM PDT</pubDate>
+    </item>
+    <item>
+        <guid>nhl597343</guid>
+        <title>Roman Josi: Provides trio of helpers</title>
+        <link>https://www.rotowire.com//hockey/player/roman-josi-3037</link>
+        <description>Josi notched three power-play assists, four shots on goal and four PIM in Sunday's 6-2 win over the Avalanche.
+
+        Visit RotoWire.com for more analysis on this update.</description>
+        <pubDate>Sun, 25 Oct 2026 8:39:00 PM PDT</pubDate>
+    </item>
+    <item>
+        <guid>nhl597341</guid>
+        <title>Filip Forsberg: Three-point effort in Sunday's win</title>
+        <link>https://www.rotowire.com//hockey/player/filip-forsberg-3971</link>
+        <description>Forsberg scored a goal and added two assists, all on the power play, in Sunday's 6-2 win over the Avalanche.
+
+        Visit RotoWire.com for more analysis on this update.</description>
+        <pubDate>Sun, 25 Oct 2026 8:32:00 PM PDT</pubDate>
+    </item>
+    <item>
+        <guid>nhl597340</guid>
+        <title>Steven Stamkos: Racks up three points in win</title>
+        <link>https://www.rotowire.com//hockey/player/steven-stamkos-2920</link>
+        <description>Stamkos scored twice on four shots and added an assist in Sunday's 6-2 win over the Avalanche.
+
+        Visit RotoWire.com for more analysis on this update.</description>
+        <pubDate>Sun, 25 Oct 2026 8:30:00 PM PDT</pubDate>
+    </item>
+  </channel>
+</rss>

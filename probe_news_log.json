@@ -1,0 +1,30 @@
+{
+ "espn_injuries": {
+  "status": 200,
+  "bytes": 1373420,
+  "type": "application/json;charset=UTF-8"
+ },
+ "espn_news": {
+  "status": 200,
+  "bytes": 245597,
+  "type": "application/json;charset=UTF-8"
+ },
+ "dfo_news": {
+  "status": 200,
+  "bytes": 139230,
+  "type": "text/html; charset=utf-8"
+ },
+ "dfo_lines_tor": {
+  "status": 200,
+  "bytes": 255263,
+  "type": "text/html; charset=utf-8"
+ },
+ "rotowire_rss": {
+  "status": 200,
+  "bytes": 3027,
+  "type": "application/xml"
+ },
+ "bsky_search": {
+  "error": "HTTP Error 403: Forbidden"
+ }
+}

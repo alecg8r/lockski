@@ -59,7 +59,8 @@ def kalshi():
         date = f"20{ev.group(1)}-{MON[ev.group(2)]:02d}-{ev.group(3)}"
         ask = num(m.get("yes_ask_dollars"))
         if ok(ask):
-            out.setdefault(f"{date}-{pair[0]}-{pair[1]}", {}).setdefault("ml", {})[team] = {"ask": ask, "x": kalshi_x(ask)}
+            gk = out.setdefault(f"{date}-{pair[0]}-{pair[1]}", {}); gk.setdefault("ml", {})[team] = {"ask": ask, "x": kalshi_x(ask)}
+            gk["url"] = f"https://kalshi.com/markets/kxnhlgame/{m['event_ticker'].lower()}"
     for m in get(K + "KXNHLSPREAD").get("markets", []):
         if num(m.get("floor_strike")) != 1.5: continue           # "wins by over 1.5 goals" = that team -1.5
         ev = re.match(r"KXNHLSPREAD-(\d\d)([A-Z]{3})(\d\d)([A-Z]+)$", m.get("event_ticker", ""))
@@ -89,6 +90,7 @@ def polymarket():
         a, h = ab(sm.group(1)), ab(sm.group(2))
         if not (a and h): continue
         gid = f"{sm.group(3)}-{a}-{h}"
+        out.setdefault(gid, {})["url"] = f"https://polymarket.com/event/{e['slug']}"
         for mk in e.get("markets", []):
             if mk.get("closed"): continue
             try: names = json.loads(mk.get("outcomes") or "[]")

@@ -12,6 +12,6 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           mkdir -p /tmp/r && cd /tmp/r
-          if [ "${{ inputs.job }}" = "dates" ]; then python3 $GITHUB_WORKSPACE/tools/research/fetch_dates.py; else python3 $GITHUB_WORKSPACE/tools/research/probe_markets.py; fi
+          case "${{ inputs.job }}" in dates) python3 $GITHUB_WORKSPACE/tools/research/fetch_dates.py;; news) python3 $GITHUB_WORKSPACE/tools/research/probe_news.py;; *) python3 $GITHUB_WORKSPACE/tools/research/probe_markets.py;; esac
           cd $GITHUB_WORKSPACE && git checkout --orphan research-data && git rm -rfq . && cp /tmp/r/* . && git add .
           git -c user.name=lockski -c user.email=lockski@users.noreply.github.com commit -qm "research: game dates" && git push -f origin research-data

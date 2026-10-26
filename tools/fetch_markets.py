@@ -124,7 +124,46 @@ def main():
             new["errors"][name] = str(e)
             if (cur.get("venues") or {}).get(name): new["venues"][name] = cur["venues"][name]   # keep the last good prices, marked by "errors"
     P.write_text(json.dumps(new, separators=(",", ":")))
+    record_history(new)
     print("markets:", {k: len(v) for k, v in new["venues"].items()}, "errors:", new["errors"] or "none")
+
+
+H = D / "inputs" / "market_hist.json"
+
+
+def record_history(mk):
+    """Win price per team over the last 24 hours (Kalshi, else Polymarket), to spot lines that move on news."""
+    hist = json.loads(H.read_text()) if H.exists() else {}
+    now = mk["at"]; cutoff = (datetime.now(timezone.utc).timestamp() - 24 * 3600)
+    games = set((mk["venues"].get("kalshi") or {})) | set((mk["venues"].get("polymarket") or {}))
+    for gid in games:
+        for ven in ("kalshi", "polymarket"):
+            ml = ((mk["venues"].get(ven) or {}).get(gid) or {}).get("ml") or {}
+            if len(ml) == 2:
+                for team, q in ml.items():
+                    hist.setdefault(gid, {}).setdefault(team, []).append([now, q["ask"], ven])
+                break
+    for gid in list(hist):
+        for team in list(hist[gid]):
+            hist[gid][team] = [r for r in hist[gid][team] if datetime.fromisoformat(r[0]).timestamp() >= cutoff][-400:]
+            if not hist[gid][team]: del hist[gid][team]
+        if not hist[gid]: del hist[gid]
+    H.write_text(json.dumps(hist, separators=(",", ":")))
+
+
+def moves(gid, hours=3, min_move=0.05):
+    """Biggest same-venue price change for either team in the last `hours`: {team, from, to, mins, venue} or None."""
+    try: hist = json.loads(H.read_text()).get(gid, {})
+    except Exception: return None
+    now = datetime.now(timezone.utc).timestamp(); best = None
+    for team, rows in hist.items():
+        rows = [r for r in rows if now - datetime.fromisoformat(r[0]).timestamp() <= hours * 3600]
+        if len(rows) < 2: continue
+        last = rows[-1]; same = [r for r in rows if r[2] == last[2]]
+        first = same[0]; d = last[1] - first[1]
+        if abs(d) >= min_move and (best is None or abs(d) > abs(best["to"] - best["from"])):
+            best = {"team": team, "from": first[1], "to": last[1], "venue": last[2], "mins": round((datetime.fromisoformat(last[0]).timestamp() - datetime.fromisoformat(first[0]).timestamp()) / 60)}
+    return best
 
 
 def attach(m):
@@ -136,6 +175,9 @@ def attach(m):
         v = {name: ven[gid] for name, ven in (mk.get("venues") or {}).items() if gid in ven}
         if v: g["venues"] = {**v, "at": mk.get("at")}; n += 1
         else: g.pop("venues", None)
+        mv = moves(gid)
+        if mv and mv["team"] in (g.get("home"), g.get("away")): g["move"] = mv
+        else: g.pop("move", None)
     return n
 
 

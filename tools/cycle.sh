@@ -8,6 +8,7 @@ FAILED=""
 # pregame inputs around the clock, at most once every ~9 minutes (polite to the sources); FORCE_INPUTS=1 skips the wait
 step inputs python3 tools/fetch_inputs.py scheduled
 step markets python3 tools/fetch_markets.py
+step news python3 tools/fetch_news.py
 step settle python3 tools/settle_live.py
 step recent python3 tools/recent_games.py
 step shotquality python3 tools/xg_nightly.py

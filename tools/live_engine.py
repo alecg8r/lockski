@@ -144,6 +144,10 @@ def main():
     gd = load(INP / "gameday.json", {"starters": {}, "injuries": [], "odds": {}, "source_goalies": None, "source_injuries": None})
     gd["recent_games"] = [f'{g["date"]}|{g["away"]}|{g["home"]}' for g in games.values() if today - timedelta(days=7) <= date.fromisoformat(g["date"]) < today]
     gd.setdefault("source_goalies", None); gd.setdefault("source_injuries", None); gd.setdefault("odds", {})
+    try:   # second injury source: ESPN entries CBS doesn't list (tools/fetch_news.py)
+        sys.path.insert(0, str(ROOT / "tools")); import fetch_news as FN; notes.append(f"{FN.merge_injuries(gd)} injuries added from ESPN")
+    except Exception as e:
+        notes.append(f"ESPN injuries skipped: {e}")
     W = Path(tempfile.mkdtemp())
     (W / "weeks.json").write_text(json.dumps(weeks)); (W / "gameday.json").write_text(json.dumps(gd))
     (W / "increments.json").write_text(json.dumps(inc)); (W / "ledger.json").write_text((DATA / "ledger.json").read_text() if (DATA / "ledger.json").exists() else "{}")
@@ -174,6 +178,7 @@ def main():
     try:   # official NHL headshots for hot-list players and starting goalies (tools/rosters.py keeps data/rosters.json)
         sys.path.insert(0, str(ROOT / "tools")); import rosters as RO; RO.attach(m)
         import fetch_markets as FM; notes.append(f"{FM.attach(m)} games with Kalshi/Polymarket prices")
+        import fetch_news as FN; notes.append(f"{FN.attach(m)} news items attached")
     except Exception as e:
         notes.append(f"headshots skipped: {e}")
     # only write (and so only commit) when something real changed, so the repo history stays small

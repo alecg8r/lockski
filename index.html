@@ -1,6 +1,6 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>lockski.ai</title>
-<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=2"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski.ai">
+<title>lockski</title>
+<meta name="theme-color" content="#000000"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="lockski">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap">
@@ -47,6 +47,11 @@ h1 { margin: 0; font-size: clamp(28px, 8vw, 36px); font-weight: 700; letter-spac
 .tb.s { width: 30px; height: 30px; font-size: 10px; } .tb.l { width: 64px; height: 64px; font-size: 18px; } .tb.xl { width: 92px; height: 92px; font-size: 26px; }
 /* Real team logos load from the NHL's own image server on top of the badge; if one can't load, the lettered badge stays. */
 .tb { position: relative; overflow: hidden; } .tb i { font-style: normal; }
+/* player headshots (official NHL photos): same circle as a team badge, team logo tucked in the corner */
+.pf { position: relative; display: inline-block; width: 44px; height: 44px; flex: none; } .pf.s { width: 30px; height: 30px; } .pf.l { width: 64px; height: 64px; } .pf.xl { width: 92px; height: 92px; }
+.pf .hs { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 15%; background: #141414; box-shadow: inset 0 0 0 1px #2a2a2a; display: block; }
+.pf > .tb.s { position: absolute; right: -3px; bottom: -3px; width: 42%; height: 42%; font-size: 0; box-shadow: 0 0 0 2px var(--bg); }
+.pf.nohs > .hs { visibility: hidden; } .pf.nohs > .tb.s { right: 0; bottom: 0; width: 100%; height: 100%; box-shadow: none; font-size: 10px; }
 .tb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 9%; opacity: 0; transition: opacity .25s; }
 .tb.lg { background: #141414; box-shadow: inset 0 0 0 1px #2a2a2a; } .tb.lg img { opacity: 1; } .tb.lg i { visibility: hidden; }
 
@@ -249,6 +254,19 @@ body.has-slip .app { padding-bottom: calc(var(--nav-h) + 110px + env(safe-area-i
 .hero { padding: 20px 18px 16px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); display: grid; gap: 14px; }
 .hero .pl b { font-size: 46px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; display: block; }
 .hero .pl span { color: var(--muted); font-size: 14px; }
+.nrow { display: grid; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line); } .nrow:first-of-type { border-top: 0; padding-top: 2px; }
+.nrow .nt { color: var(--muted); font-size: 12px; } .nrow p { margin: 0; font-size: 14px; line-height: 1.4; } .nrow a { color: var(--muted); font-size: 12px; }
+.lwrap { overflow-x: auto; margin: 0 -2px; } .ltable { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.ltable th, .ltable td { padding: 9px 6px; text-align: center; border-top: 1px solid var(--line); white-space: nowrap; }
+.ltable thead th { border-top: 0; vertical-align: bottom; font-weight: 700; font-size: 12px; } .ltable thead th .tb { margin: 0 auto 4px; }
+.ltable th[scope="row"] { text-align: left; font-weight: 600; color: var(--muted); font-size: 12.5px; } .ltable th[scope="row"] a { color: var(--fg); text-decoration: none; }
+.ltable th[scope="row"] small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+.ltable td.na { color: #444; } .ltable td.best b { background: var(--fg); color: #000; border-radius: 999px; padding: 3px 8px; }
+.ltable tr.ours td { color: var(--muted); font-size: 12.5px; } .lgame { display: grid; gap: 8px; } .lgame + .lgame { margin-top: 18px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .tiles > div { border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: grid; gap: 2px; }
+.tiles b { font-size: 24px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; } .tiles span { color: var(--muted); font-size: 12.5px; line-height: 1.3; }
+.irow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14.5px; } .irow:first-of-type { border-top: 0; }
+.irow span { color: var(--muted); } .irow b { font-variant-numeric: tabular-nums; white-space: nowrap; } .irow b.up { color: #4ade80; } .irow b.dn { color: #f87171; }
 .stats3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; } .stats3 div { display: grid; gap: 1px; } .stats3 b { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; } .stats3 span { font-size: 12px; color: var(--muted); }
 .gph { width: 100%; height: auto; display: block; }
 .gph .zero { stroke: #3a3a3a; stroke-dasharray: 3 4; } .gph .ln { fill: none; stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
@@ -287,7 +305,22 @@ nav.tabs button svg { width: 22px; height: 22px; } nav.tabs button[aria-selected
 /* Intro: typewriter */
 #intro { position: fixed; inset: 0; z-index: 100; background: #000; display: grid; place-items: center; cursor: pointer; transition: opacity .9s ease; }
 #intro.out { opacity: 0; pointer-events: none; }
-#intro .iwm { width: min(300px, 72vw); height: auto; color: #fff; overflow: visible; }
+#intro .iwm { width: min(240px, 58vw); height: auto; color: #fff; overflow: visible; transition: opacity .55s ease, transform .55s ease; }
+#intro.p2 .iwm { opacity: 0; transform: scale(.96); }
+/* screen 2: its own black screen, message typed in the middle, the lock rises from the bottom and waves */
+#intro .iscr2 { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; pointer-events: none; overflow: hidden; }
+#intro .itag { margin: 0; min-height: 30px; font-size: 24px; font-weight: 600; letter-spacing: -.02em; color: #fff; text-transform: lowercase; display: flex; align-items: center; }
+#intro .itag i { display: inline-block; width: 3px; height: 26px; background: #fff; margin-left: 3px; visibility: hidden; } #intro .itag.on i { visibility: visible; animation: blink 1s steps(1) infinite; }
+#intro .imas { width: 116px; height: 116px; margin-top: 34px; opacity: 0; transform: translateX(-75vw); }
+#intro .imas svg { width: 100%; height: 100%; overflow: visible; }
+#intro .imas .lk-line { stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+#intro .imas.in { animation: imas-roll-in 1s cubic-bezier(.25,.8,.35,1) forwards; }
+#intro .imas.out { animation: imas-roll-out .85s cubic-bezier(.55,0,.8,.4) forwards; }
+#intro .imas.wave .wave { transform-box: fill-box; transform-origin: 0% 100%; animation: imas-wave .3s ease-in-out 6 alternate; }
+/* rolls in from the left (two full turns), stops upright in the middle, waves, rolls off to the right */
+@keyframes imas-roll-in { 0% { opacity: 1; transform: translateX(-75vw) rotate(-720deg); } 88% { opacity: 1; transform: translateX(6px) rotate(8deg); } 100% { opacity: 1; transform: translateX(0) rotate(0); } }
+@keyframes imas-roll-out { 0% { opacity: 1; transform: translateX(0) rotate(0); } 100% { opacity: 1; transform: translateX(80vw) rotate(720deg); } }
+@keyframes imas-wave { from { transform: rotate(-25deg); } to { transform: rotate(35deg); } }
 #intro .iwm path { visibility: hidden; } #intro .iwm path.on { visibility: visible; }
 #intro .cur { fill: #fff; } #intro .cur.blink { animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
@@ -334,7 +367,7 @@ nav.tabs button svg { width: 22px; height: 22px; } nav.tabs button[aria-selected
 </style>
 
 <div id="intro" aria-hidden="true">
-  <svg class="iwm" viewBox="45 -712 3500 724"><g fill="currentColor" transform="scale(1 -1)">
+  <svg class="iwm" viewBox="45 -712 2760 724"><g fill="currentColor" transform="scale(1 -1)">
 <path transform="translate(0.0 0)" d="M45 0V700H145V0Z"/>
 <path transform="translate(155.0 0)" d="M274 -12Q204 -12 147.5 20.5Q91 53 58.0 111.5Q25 170 25 248Q25 326 58.5 384.5Q92 443 148.5 475.5Q205 508 276 508Q347 508 403.5 475.5Q460 443 492.5 384.5Q525 326 525 248Q525 170 492.0 111.5Q459 53 402.0 20.5Q345 -12 274 -12ZM274 68Q314 68 347.5 88.0Q381 108 402.0 147.5Q423 187 423 248Q423 309 402.5 349.0Q382 389 348.5 408.5Q315 428 276 428Q237 428 203.0 408.5Q169 389 148.0 349.0Q127 309 127 248Q127 187 148.0 147.5Q169 108 202.5 88.0Q236 68 274 68Z"/>
 <path transform="translate(670.0 0)" d="M278 -12Q199 -12 142.5 21.0Q86 54 55.5 112.5Q25 171 25 248Q25 325 57.5 383.5Q90 442 147.5 475.0Q205 508 278 508Q369 508 431.0 460.5Q493 413 509 333H405Q396 379 360.5 403.5Q325 428 277 428Q237 428 203.0 408.0Q169 388 148.0 348.0Q127 308 127 248Q127 205 138.5 172.5Q150 140 170.0 117.5Q190 95 217.5 83.5Q245 72 277 72Q309 72 335.5 82.5Q362 93 380.5 114.0Q399 135 405 163H509Q493 84 431.0 36.0Q369 -12 278 -12Z"/>
@@ -342,16 +375,21 @@ nav.tabs button svg { width: 22px; height: 22px; } nav.tabs button[aria-selected
 <path transform="translate(1592.0 0)" d="M237 -12Q176 -12 128.0 9.0Q80 30 50.5 67.5Q21 105 15 156H116Q122 133 135.5 112.0Q149 91 174.5 77.5Q200 64 237 64Q270 64 291.5 73.5Q313 83 323.5 99.0Q334 115 334 134Q334 157 319.5 171.5Q305 186 278.5 196.5Q252 207 215 217Q184 226 152.0 236.5Q120 247 94.0 262.0Q68 277 52.0 301.5Q36 326 36 362Q36 403 58.5 436.0Q81 469 123.0 488.5Q165 508 223 508Q305 508 356.5 468.5Q408 429 417 355H320Q316 392 290.5 412.0Q265 432 222 432Q180 432 157.5 414.0Q135 396 135 369Q135 351 147.0 339.0Q159 327 184.5 318.5Q210 310 248 298Q296 284 338.5 267.0Q381 250 407.5 222.5Q434 195 434 147Q435 101 410.5 65.0Q386 29 342.0 8.5Q298 -12 237 -12Z"/>
 <path transform="translate(2011.0 0)" d="M362 0 129 273 338 496H459L211 235V309L489 0ZM45 0V700H145V0Z"/>
 <path transform="translate(2446.0 0)" d="M57 0V496H157V0ZM107 584Q78 584 59.0 602.0Q40 620 40 648Q40 675 59.0 693.5Q78 712 107 712Q135 712 154.0 693.5Q173 675 173 648Q173 621 154.0 602.5Q135 584 107 584Z"/>
-<path transform="translate(2624.0 0)" d="M99 -5Q72 -5 53.5 13.5Q35 32 35 58Q35 84 53.5 102.0Q72 120 99 120Q127 120 145.0 102.0Q163 84 163 58Q163 32 145.0 13.5Q127 -5 99 -5Z"/>
-<path transform="translate(2787.0 0)" d="M206 -12Q147 -12 107.5 8.5Q68 29 49.0 64.0Q30 99 30 140Q30 189 55.5 224.0Q81 259 129.5 278.0Q178 297 246 297H377Q377 342 363.5 371.5Q350 401 324.0 415.5Q298 430 261 430Q215 430 181.5 407.5Q148 385 141 337H41Q47 392 76.5 429.5Q106 467 154.0 487.5Q202 508 261 508Q332 508 380.5 483.0Q429 458 453.0 412.5Q477 367 477 305V0H394L384 83H380Q366 59 347.0 41.5Q328 24 306.5 12.0Q285 0 259.5 -6.0Q234 -12 206 -12ZM230 69Q265 69 291.5 82.0Q318 95 336.5 117.5Q355 140 364.5 168.0Q374 196 375 226H256Q212 226 185.5 216.0Q159 206 147.0 188.0Q135 170 135 146Q135 123 146.5 105.5Q158 88 179.5 78.5Q201 69 230 69Z"/>
-<path transform="translate(3264.0 0)" d="M57 0V496H157V0ZM107 584Q78 584 59.0 602.0Q40 620 40 648Q40 675 59.0 693.5Q78 712 107 712Q135 712 154.0 693.5Q173 675 173 648Q173 621 154.0 602.5Q135 584 107 584Z"/>
 
 </g><rect class="cur" x="60" y="-640" width="62" height="660" rx="10"/></svg>
+  <div class="iscr2" aria-hidden="true"><p class="itag"><span></span><i></i></p>
+  <div class="imas"><svg viewBox="-20 -22 40 40">
+    <path class="lk-line" d="M-6 -9V-14a6 6 0 0 1 12 0V-9"/>
+    <path class="lk-line lk-arm" data-s="-1" d="M-10 -3L-17 -9"/><path class="lk-line lk-arm wave" data-s="1" d="M10 -3L17 -9"/>
+    <path class="lk-line" d="M-4.5 7L-7 16M4.5 7L7 16"/>
+    <rect x="-10.5" y="-9.5" width="21" height="17" rx="4.5" fill="#fff"/>
+    <circle cx="0" cy="-2.6" r="2.1" fill="#000"/><rect x="-.95" y="-2.4" width="1.9" height="5.2" rx=".95" fill="#000"/>
+  </svg></div></div>
 </div>
 
 <div class="scroller" id="scroller"><div class="app">
   <header class="top">
-    <svg class="wm" viewBox="45 -712 3392 724" role="img" aria-label="lockski.ai"><g fill="currentColor" transform="scale(1 -1)">
+    <svg class="wm" viewBox="45 -712 2579 724" role="img" aria-label="lockski"><g fill="currentColor" transform="scale(1 -1)">
 <path transform="translate(0.0 0)" d="M45 0V700H145V0Z"/>
 <path transform="translate(155.0 0)" d="M274 -12Q204 -12 147.5 20.5Q91 53 58.0 111.5Q25 170 25 248Q25 326 58.5 384.5Q92 443 148.5 475.5Q205 508 276 508Q347 508 403.5 475.5Q460 443 492.5 384.5Q525 326 525 248Q525 170 492.0 111.5Q459 53 402.0 20.5Q345 -12 274 -12ZM274 68Q314 68 347.5 88.0Q381 108 402.0 147.5Q423 187 423 248Q423 309 402.5 349.0Q382 389 348.5 408.5Q315 428 276 428Q237 428 203.0 408.5Q169 389 148.0 349.0Q127 309 127 248Q127 187 148.0 147.5Q169 108 202.5 88.0Q236 68 274 68Z"/>
 <path transform="translate(670.0 0)" d="M278 -12Q199 -12 142.5 21.0Q86 54 55.5 112.5Q25 171 25 248Q25 325 57.5 383.5Q90 442 147.5 475.0Q205 508 278 508Q369 508 431.0 460.5Q493 413 509 333H405Q396 379 360.5 403.5Q325 428 277 428Q237 428 203.0 408.0Q169 388 148.0 348.0Q127 308 127 248Q127 205 138.5 172.5Q150 140 170.0 117.5Q190 95 217.5 83.5Q245 72 277 72Q309 72 335.5 82.5Q362 93 380.5 114.0Q399 135 405 163H509Q493 84 431.0 36.0Q369 -12 278 -12Z"/>
@@ -359,9 +397,6 @@ nav.tabs button svg { width: 22px; height: 22px; } nav.tabs button[aria-selected
 <path transform="translate(1592.0 0)" d="M237 -12Q176 -12 128.0 9.0Q80 30 50.5 67.5Q21 105 15 156H116Q122 133 135.5 112.0Q149 91 174.5 77.5Q200 64 237 64Q270 64 291.5 73.5Q313 83 323.5 99.0Q334 115 334 134Q334 157 319.5 171.5Q305 186 278.5 196.5Q252 207 215 217Q184 226 152.0 236.5Q120 247 94.0 262.0Q68 277 52.0 301.5Q36 326 36 362Q36 403 58.5 436.0Q81 469 123.0 488.5Q165 508 223 508Q305 508 356.5 468.5Q408 429 417 355H320Q316 392 290.5 412.0Q265 432 222 432Q180 432 157.5 414.0Q135 396 135 369Q135 351 147.0 339.0Q159 327 184.5 318.5Q210 310 248 298Q296 284 338.5 267.0Q381 250 407.5 222.5Q434 195 434 147Q435 101 410.5 65.0Q386 29 342.0 8.5Q298 -12 237 -12Z"/>
 <path transform="translate(2011.0 0)" d="M362 0 129 273 338 496H459L211 235V309L489 0ZM45 0V700H145V0Z"/>
 <path transform="translate(2446.0 0)" d="M57 0V496H157V0ZM107 584Q78 584 59.0 602.0Q40 620 40 648Q40 675 59.0 693.5Q78 712 107 712Q135 712 154.0 693.5Q173 675 173 648Q173 621 154.0 602.5Q135 584 107 584Z"/>
-<path transform="translate(2624.0 0)" d="M99 -5Q72 -5 53.5 13.5Q35 32 35 58Q35 84 53.5 102.0Q72 120 99 120Q127 120 145.0 102.0Q163 84 163 58Q163 32 145.0 13.5Q127 -5 99 -5Z"/>
-<path transform="translate(2787.0 0)" d="M206 -12Q147 -12 107.5 8.5Q68 29 49.0 64.0Q30 99 30 140Q30 189 55.5 224.0Q81 259 129.5 278.0Q178 297 246 297H377Q377 342 363.5 371.5Q350 401 324.0 415.5Q298 430 261 430Q215 430 181.5 407.5Q148 385 141 337H41Q47 392 76.5 429.5Q106 467 154.0 487.5Q202 508 261 508Q332 508 380.5 483.0Q429 458 453.0 412.5Q477 367 477 305V0H394L384 83H380Q366 59 347.0 41.5Q328 24 306.5 12.0Q285 0 259.5 -6.0Q234 -12 206 -12ZM230 69Q265 69 291.5 82.0Q318 95 336.5 117.5Q355 140 364.5 168.0Q374 196 375 226H256Q212 226 185.5 216.0Q159 206 147.0 188.0Q135 170 135 146Q135 123 146.5 105.5Q158 88 179.5 78.5Q201 69 230 69Z"/>
-<path transform="translate(3264.0 0)" d="M57 0V496H157V0ZM107 584Q78 584 59.0 602.0Q40 620 40 648Q40 675 59.0 693.5Q78 712 107 712Q135 712 154.0 693.5Q173 675 173 648Q173 621 154.0 602.5Q135 584 107 584Z"/>
 
 </g></svg>
     <button id="refresh" class="rbtn" aria-label="Update everything now" title="Update everything now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4.5h-4.5"/></svg></button>
@@ -381,7 +416,7 @@ nav.tabs button svg { width: 22px; height: 22px; } nav.tabs button[aria-selected
   <button role="tab" id="t-hot" aria-selected="false" aria-controls="v-hot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6 0-3.2 2.3-5 3.6-7.8.4 1.7 1.3 2.8 2.4 3.4.2-2.9 1.7-5.4 3.6-7.1-.3 3 1 4.8 2.3 6.5 1 1.3 1.6 2.9 1.6 4.9 0 3.5-2.9 6.1-7 6.1z"/></svg>Hot</button>
   <button role="tab" id="t-games" aria-selected="false" aria-controls="v-games"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Games</button>
   <button role="tab" id="t-mine" aria-selected="false" aria-controls="v-mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16l-2-1.5L15 20l-2-1.5L11 20l-2-1.5L7 20l-2-1.5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg>My bets</button>
-  <button role="tab" id="t-results" aria-selected="false" aria-controls="v-results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 16v-5M11 16V7M16 16v-3M21 16V4"/></svg>Graphs</button>
+  <button role="tab" id="t-results" aria-selected="false" aria-controls="v-results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6 16v-5M11 16V7M16 16v-3M21 16V4"/></svg>Insights</button>
 </div></nav>
 <button id="slipbar" class="slipbar" hidden></button>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -432,6 +467,9 @@ document.addEventListener("error", e => { const im = e.target; if (!im || im.tag
   const list = logoSrcs(im.dataset.ab), i = list.indexOf(im.getAttribute("src")); if (i >= 0 && i < list.length - 1) im.setAttribute("src", list[i + 1]); else im.remove(); }, true);
 const badge = (ab, cls = "") => { const t = TEAM[ab] || [ab, ab, "#333", "#fff"], a = esc(ab);
   return `<span class="tb ${cls}" style="--c:${t[2]};--t:${t[3]}" aria-hidden="true"><img data-ab="${a}" src="${esc(LOGO_OK[ab] || logoSrcs(ab)[0])}" alt="" referrerpolicy="no-referrer" decoding="async"><i>${a}</i></span>`; };
+// face(name, team, hs): the player's official NHL headshot in a badge-sized circle, team logo in the corner.
+// No photo (or it fails to load): the plain team badge, exactly as before.
+const face = (hs, team, cls = "") => hs ? `<span class="pf ${cls}" aria-hidden="true"><img class="hs" src="${esc(hs)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.parentNode.classList.add('nohs')">${badge(team, "s")}</span>` : badge(team, cls);
 const pct = p => Math.round(p * 100) + "%";
 const cents = p => Math.round(p * 100);
 // PrizePicks shows a payout multiplier: $10 at 1.40x pays back $14. The multiplier a pick deserves is 1 / chance to win.
@@ -450,7 +488,7 @@ function decide(p, x, typed) {   // typed = you entered the real PrizePicks mult
   const need = minMult(p), ten = `$10 pays back $${(10 * x).toFixed(2)}`;
   if (!typed && x >= need) return { k: "take", t: `Worth it at ${fmtX(need)}+`, s: `Sportsbooks suggest about ${fmtX(x)}. That's an estimate, so check PrizePicks pays ${fmtX(need)} or more before you take it.`, pill: `Worth it at ${fmtX(need)}+` };
   if (p - 1 / x >= BIG) return { k: "news", t: "Check news first", s: `${fmtX(x)} is more than this pick should pay. Make sure the goalie or lineup didn't change, then take it. ${ten}.`, pill: "Check news" };
-  if (x >= need) return { k: "take", t: "Take it", s: `${ten}.`, pill: "Take it" };
+  if (x >= need) return { k: "take", t: "Take it", s: `${ten} at the best price you can bet.`, pill: "Take it" };
   if (need - x <= 0.10) return { k: "wait", t: `Wait for ${fmtX(need)}`, s: `It pays ${fmtX(x)} right now. Take it if it moves up to ${fmtX(need)}.`, pill: `Wait for ${fmtX(need)}` };
   return { k: "no", t: "Don't take it", s: `${fmtX(x)} doesn't pay enough for a ${pct(p)} pick. It would need ${fmtX(need)}.`, pill: "Skip" };
 }
@@ -518,15 +556,33 @@ function picks() {   // the model's side for every upcoming game in the next 7 d
      When the sportsbooks post a line (each morning and evening run), the card switches to a real take/skip call on its own. */
 function bestBets() {
   const all = picks().map(B => { const c = callFor(B); return { ...B, c, priced: !!(c && c.d), ev: c && c.d && (c.d.k === "take" || c.d.k === "news") ? B.p * c.mu.x - 1 : null }; });
-  const now = Date.now(), pls = [];
-  allGames().forEach(g => { const m = S.model.games[g.id], k = m && m.market && m.market.pl, t0 = Date.parse(g.startUTC);
-    if (!k || !m.pl || t0 <= now || t0 > now + 7 * 864e5) return;
-    [[g.home, k.homeLine], [g.away, k.awayLine]].forEach(([team, line]) => {
-      const home = team === g.home, side = home ? "home" : "away", p = plProb(m, team, g.home, line), mu = plMultFor(m, team, g.home, line, plKey(g.id, side, line)), d = mu && decide(p, mu.x, mu.typed);
-      if (d && d.k === "take" && p * mu.x - 1 > 0) pls.push({ g, m, side, team, opp: home ? g.away : g.home, p, atHome: home, line, c: { mu, d }, priced: true, ev: p * mu.x - 1 }); }); });
-  const value = [...all.filter(B => B.ev != null && B.ev > 0), ...pls.sort((a, b) => b.ev - a.ev).slice(0, 2)].sort((a, b) => b.ev - a.ev);
+  const value = all.filter(B => B.ev != null && B.ev > 0).sort((a, b) => b.ev - a.ev);
   const early = all.filter(B => !B.priced && B.p >= 0.56).sort((a, b) => b.p - a.p);
   return [...value.slice(0, 4), ...early].slice(0, 8).sort((a, b) => a.g.startUTC < b.g.startUTC ? -1 : 1);   // shown soonest first
+}
+
+/* Best spreads for the next 7 days, same rules as best bets:
+   - Games with a puck-line price (sportsbook estimate, or a multiplier you typed): only spreads worth taking, ranked by
+     expected profit per $10. Priced spreads that don't pay enough are left out on purpose.
+   - Games without a puck-line price yet: our strongest favourites at -1.5 (60%+ to win), each showing the multiplier that
+     makes it worth it. When a price posts, the card switches to a real call on its own. Shown soonest first. */
+function bestSpreads() {
+  if (!S.model || !S.model.games) return [];
+  const now = Date.now(), end = now + 7 * 864e5, value = [], early = [];
+  allGames().forEach(g => {
+    const m = S.model.games[g.id], t0 = Date.parse(g.startUTC); if (!m || !m.pl || t0 <= now || t0 > end) return;
+    const k = m.market && m.market.pl, favHome = m.pHome >= m.pAway;
+    const sides = k ? [[g.home, k.homeLine], [g.away, k.awayLine]] : [[favHome ? g.home : g.away, -1.5], [favHome ? g.away : g.home, 1.5]];
+    let priced = false;
+    sides.forEach(([team, line]) => {
+      const home = team === g.home, side = home ? "home" : "away", p = plProb(m, team, g.home, line), mu = plMultFor(m, team, g.home, line, plKey(g.id, side, line)), d = mu && decide(p, mu.x, mu.typed);
+      if (d) priced = true;
+      if (d && (d.k === "take" || d.k === "news") && p * mu.x - 1 > 0) value.push({ g, m, side, team, opp: home ? g.away : g.home, p, atHome: home, line, c: { mu, d }, priced: true, ev: p * mu.x - 1 });
+    });
+    const fp = favHome ? m.pHome : m.pAway, ft = favHome ? g.home : g.away;
+    if (!priced && fp >= 0.60) early.push({ g, m, side: favHome ? "home" : "away", team: ft, opp: favHome ? g.away : g.home, p: plProb(m, ft, g.home, -1.5), atHome: favHome, line: -1.5, c: null, priced: false, ev: null });
+  });
+  return [...value.sort((a, b) => b.ev - a.ev).slice(0, 4), ...early.sort((a, b) => b.p - a.p)].slice(0, 8).sort((a, b) => a.g.startUTC < b.g.startUTC ? -1 : 1);
 }
 
 /* ---------------- Parlays (straight team-to-win picks only) ----------------
@@ -607,7 +663,7 @@ function openParlay() {
     <div class="betform box" style="gap:10px">
       <label class="field"><span>I put down</span><div><i>$</i><input id="px-stake" inputmode="decimal" value="${S.unit}"></div></label>
       <div class="payline" id="px-pay"></div>
-      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
+      <button class="go wide" data-lines="${esc(SLIP.map(l => l.gid).join(","))}"><span>compare lines</span>${ppIcon}</button>
       <button class="save" id="px-save">I took this parlay</button>
     </div>` : `<div class="box"><p>Add at least one more pick to make a parlay.</p></div>`}
     ${SLIP.length ? `<button class="linkbtn" data-clear="1">Clear parlay</button>` : ""}
@@ -647,9 +703,9 @@ const lockIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 function callFor(B) { const mu = multFor(B.m, B.side, B.g.id + ":" + B.side); return mu ? { mu, d: decide(B.p, mu.x, mu.typed) } : null; }
 function betCard(B) {
   const c = B.line != null ? B.c : callFor(B), news = c && c.d && c.d.k === "news";
-  return `<article class="bet" data-gid="${esc(B.g.id)}" tabindex="0" aria-label="Take this bet: ${esc(full(B.team))}, ${pct(B.p)} chance to win. Tap for details.">
+  return `<article class="bet" data-gid="${esc(B.g.id)}" tabindex="0" aria-label="Take this bet: ${esc(full(B.team))}${esc(lineTxt(B.line))}, ${pct(B.p)} chance to ${B.line != null ? "cover" : "win"}. Tap for details.">
     <div class="lab"><span class="hd">Take this bet</span><button class="plus${inSlip(B.g.id, B.team) ? " in" : ""}" data-addleg="${esc(B.g.id)}" data-team="${esc(B.team)}" data-line="${B.line ?? ""}" aria-label="${inSlip(B.g.id, B.team) ? "Remove from" : "Add to"} parlay">${inSlip(B.g.id, B.team) ? "✓" : "+"}</button></div>
-    <div class="row">${badge(B.team)}<div class="pc"><b>${pct(B.p)}</b><small>to win</small></div></div>
+    <div class="row">${badge(B.team)}<div class="pc"><b>${pct(B.p)}</b><small>${B.line != null ? "to cover" : "to win"}</small></div></div>
     <div><div class="tm">${esc(nl(B.team, B.line))}</div><div class="gm">${B.atHome ? "vs" : "at"} ${esc(nick(B.opp))}<br>${esc(whenTxt(B.g))}</div>
       ${c && c.d ? `<div style="margin-top:7px"><span class="pill ${c.d.k}">${esc(c.d.pill)}</span></div>` : `<div style="margin-top:7px"><span class="pill">worth it at ${fmtX(minMult(B.p))}+</span></div>`}</div>
   </article>`;
@@ -671,7 +727,7 @@ function lockCard(L) {
   return `<article class="lotd" style="--tc:${tc}" data-gid="${esc(L.g.id)}" tabindex="0" aria-label="Lock of the day: ${esc(full(L.team))}, ${pct(L.p)} chance to win">
     <div class="lh"><span>${lockIcon}lock of the day</span><span>${esc(whenTxt(L.g))}</span></div>
     <div class="core">${badge(L.team, "l")}<div class="tnw"><div class="tn">${esc(full(L.team))}</div><div class="vs2">${L.atHome ? "vs" : "at"} ${esc(full(L.opp))}</div></div><div class="big2"><b>${Math.round(L.p * 100)}<span style="font-size:.5em">%</span></b><small>to win</small></div></div>
-    <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
+    <button class="go wide" data-lines="${esc(L.g.id)}"><span>compare lines</span>${ppIcon}</button>
   </article>`;
 }
 function moneyCard() {
@@ -701,6 +757,9 @@ function renderBets() {
     <div class="sh"><h2>Best bets this week</h2><button data-go="games">Next 7 days</button></div>
     ${B.length ? `<div class="rail">${B.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">soonest first. later games show the multiplier that makes them worth it and update on their own as prices post.</p>`
       : `<div class="empty"><b>no strong picks in the next 7 days</b><p>none of the upcoming games clear our bar yet. this updates on its own as goalies, injuries and prices come in.</p></div>`}
+    ${(() => { const SP = bestSpreads(); return `<div class="sh"><h2>Best spreads this week</h2><button data-go="games">Next 7 days</button></div>
+    ${SP.length ? `<div class="rail">${SP.map(betCard).join("")}</div><p class="fine" style="text-align:left;margin:0">puck lines: −1.5 wins by 2 or more, +1.5 wins or loses by just 1. soonest first. later games show the multiplier that makes them worth it.</p>`
+      : `<div class="empty"><b>no strong spreads in the next 7 days</b><p>none of the upcoming puck lines clear our bar yet. this updates on its own as prices come in.</p></div>`}`; })()}
     ${""/* Best parlay of the day removed after backtest: suggested parlays lost 40% of stakes in 2025-26 */}
     ${upcoming.length ? `<div class="sh"><h2>${todays.length ? "Today's games" : "Next games"}</h2><button data-go="games">See all</button></div>
       <div class="list">${upcoming.slice(0, 6).map(g => { const m = S.model.games[g.id] || {}, pa = m.pAway ?? .5, ph = m.pHome ?? .5;
@@ -709,7 +768,7 @@ function renderBets() {
           <span class="ck">${betIds.has(g.id) ? "✓" : ""}</span></button>`; }).join("")}</div>` : ""}
     <div class="sh"><h2>Who's hot</h2><button data-go="hot">See all</button></div>
     <div class="hot2"><div><h3>Teams</h3>${teams.map(([t, x], i) => `<div class="hr" data-hot="teams" data-i="${i}" style="cursor:pointer">${badge(t, "s")}<span>${esc(nick(t))}</span><b>${x.heat}</b></div>`).join("")}</div>
-      <div><h3>Players</h3>${players.map((x, i) => `<div class="hr" data-hot="players" data-i="${i}" style="cursor:pointer">${badge(x.team, "s")}<span>${esc(x.name.split(" ").slice(-1)[0])}</span><b>${x.heat}</b></div>`).join("")}</div></div>
+      <div><h3>Players</h3>${players.map((x, i) => `<div class="hr" data-hot="players" data-i="${i}" style="cursor:pointer">${face(x.hs, x.team, "s")}<span>${esc(x.name.split(" ").slice(-1)[0])}</span><b>${x.heat}</b></div>`).join("")}</div></div>
     ${trackRecord()}
     <p class="fine">Picks, not promises. Even our strongest picks lose about 1 in 3.</p>`;
 }
@@ -727,14 +786,14 @@ $("v-bets").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key =
 
 /* ---------------- How we've done (home) ----------------
    Every pick lockski locked before puck drop, graded: all-time record, % right, and the last 12 results as chips.
-   Tapping it opens Graphs at the all-time chart. */
+   Tapping it opens Insights at lockski's record. */
 function trackRecord() {
   const g = ledgerRows().graded;   // newest first
-  if (!g.length) return `<button class="track" data-go="results"><div class="trh"><span>how we've done</span><span>graphs →</span></div><div class="trb"><b>0–0</b><span>our record starts with today's games. every pick is locked before puck drop and graded after.</span></div></button>`;
+  if (!g.length) return `<button class="track" data-go="results"><div class="trh"><span>how we've done</span><span>insights →</span></div><div class="trb"><b>0–0</b><span>our record starts with today's games. every pick is locked before puck drop and graded after.</span></div></button>`;
   const w = g.filter(r => r.ok).length, l = g.length - w, strong = g.filter(r => r.p >= .6), sw = strong.filter(r => r.ok).length;
   const last = g.slice(0, 12).reverse();
   return `<button class="track" data-go="results" data-anchor="gc-model">
-    <div class="trh"><span>how we've done · all time</span><span>graphs →</span></div>
+    <div class="trh"><span>how we've done · all time</span><span>insights →</span></div>
     <div class="trb"><b>${w}–${l}</b><span><b style="font-size:15px">${pct(w / g.length)}</b> of our picks right${strong.length ? ` · ${sw}–${strong.length - sw} on 60%+ picks` : ""}</span></div>
     <div class="chips">${last.map(r => `<i class="${r.ok ? "w" : "l"}" title="${esc(full(r.pick))} ${r.ok ? "won" : "lost"}">${esc(r.pick)}</i>`).join("")}</div>
   </button>`;
@@ -782,7 +841,7 @@ function openHot(kind, i) {
   $("sheet-card").innerHTML = `<button class="x" data-close="1" aria-label="Close">×</button>
     <div class="when">${esc(kind === "teams" ? full(x.t) : x.team + " · " + (x.pos || ""))}</div>
     <h2 class="h2">${esc(kind === "teams" ? nick(x.t) : x.name)} <span style="color:var(--muted);font-weight:600">· ${esc(x.heat)} hot</span></h2>
-    <div style="display:flex;justify-content:center">${badge(kind === "teams" ? x.t : x.team, "xl")}</div>
+    <div style="display:flex;justify-content:center">${kind === "teams" ? badge(x.t, "xl") : face(x.hs, x.team, "xl")}</div>
     ${body}`;
   lastFocus = document.activeElement; $("sheet").hidden = false; document.body.style.overflow = "hidden";
 }
@@ -792,8 +851,8 @@ function renderHot() {
   let rows = [];
   if (mode === "teams") rows = Object.entries(S.model.teams || {}).map(([t, x]) => ({ t, ...x })).sort((a, b) => b.heat - a.heat)
     .map((x, i) => [i, badge(x.t, "s"), nick(x.t), x.t, x.heat, teamWhy(x)]);
-  else if (mode === "players") rows = (S.model.players || []).slice(0, 30).map((x, i) => [i, badge(x.team, "s"), x.name, `${x.pts} pts in ${x.gp}`, x.heat, playerWhy(x)]);
-  else rows = (S.model.goalies || []).slice(0, 30).map((x, i) => [i, badge(x.team, "s"), x.name, `${x.gp} games`, x.heat, x.gsax != null ? `${x.gsax >= 0 ? "saved" : "allowed"} ${Math.abs(x.gsax).toFixed(1)} goals ${x.gsax >= 0 ? "above" : "below"} expected` : null]);
+  else if (mode === "players") rows = (S.model.players || []).slice(0, 30).map((x, i) => [i, face(x.hs, x.team, "s"), x.name, `${x.pts} pts in ${x.gp}`, x.heat, playerWhy(x)]);
+  else rows = (S.model.goalies || []).slice(0, 30).map((x, i) => [i, face(x.hs, x.team, "s"), x.name, `${x.gp} games`, x.heat, x.gsax != null ? `${x.gsax >= 0 ? "saved" : "allowed"} ${Math.abs(x.gsax).toFixed(1)} goals ${x.gsax >= 0 ? "above" : "below"} expected` : null]);
   v.innerHTML = `
     <div><h1>Who's hot</h1><p class="sub">Hot score out of 100. 50 is average. Over 75 is on fire.</p></div>
     <div class="seg" role="group" aria-label="Show">${[["teams", "Teams"], ["players", "Players"], ["goalies", "Goalies"]].map(([k, l]) => `<button data-m="${k}" aria-pressed="${mode === k}">${l}</button>`).join("")}</div>
@@ -947,38 +1006,76 @@ function graphModel() {   // lockski's own picks: running record, and $10 on eve
     ${hasCash ? `<polyline class="up" points="${pth(cashPts, cy)}"/><text class="ax" x="${x(n).toFixed(1)}" y="${(cy(cash) + 14).toFixed(1)}" text-anchor="end">${money(cash, true)}</text>` : ""}
     <text class="ax" x="${P}" y="${H - 2}">first pick</text><text class="ax" x="${W - P}" y="${H - 2}" text-anchor="end">latest</text></svg>`;
 }
-function renderResults() {
+/* ---------------- Beat the close ----------------
+   For every bet whose game has started: the sportsbooks' fair chance at lock time (last price before puck drop, cut
+   removed) vs the multiplier you got. value = your multiplier x closing chance - 1. Positive = you got a better price
+   than the market's final word, which is the earliest reliable sign of a real edge (long before profit can prove it). */
+function closeChance(l) {   // closing fair chance for one pick (moneyline or puck line), or null
+  const L = (S.ledger || {})[l.gid], o = L && L.official; if (!o) return null;
+  const g = allGames().find(x => x.id === l.gid), start = g ? Date.parse(g.startUTC) : Date.parse(L.startUTC || "");
+  if (!(Date.now() >= start)) return null;   // not closed yet
+  const home = l.team === (l.home || L.home);
+  if (l.line == null) return o.market == null ? null : home ? o.market : 1 - o.market;
+  const k = o.marketPL; if (!k) return null;
+  return (home ? k.homeLine : k.awayLine) === Number(l.line) ? (home ? k.pHome : k.pAway) : null;
+}
+function clvRows() {
+  return betsList().map(b => { const legs = b.type === "parlay" ? b.legs : [{ gid: b.gid, team: b.team, home: b.home, line: b.line }];
+    const cs = legs.map(closeChance); if (cs.some(c => c == null)) return null;
+    const pc = cs.reduce((a, c) => a * c, 1); return { b, pc, v: b.mult * pc - 1 }; }).filter(Boolean);
+}
+function clvCard() {
+  const r = clvRows();
+  if (!r.length) return `<div class="gcard dim"><h3>beat the close</h3><p class="fine" style="text-align:left;margin:0">once your bets' games start, this compares the multiplier you got with the sportsbooks' final price. beating it often is the best early sign of a real edge.</p></div>`;
+  const beat = r.filter(x => x.v > 0).length, avg = r.reduce((a, x) => a + x.v, 0) / r.length;
+  return `<div class="gcard"><h3>beat the close <b>${beat} of ${r.length}</b></h3>
+    <p style="margin:0;font-size:15px"><b style="color:${avg >= 0 ? "#4ade80" : "#f87171"}">${avg >= 0 ? "+" : "−"}${Math.abs(avg * 100).toFixed(1)}%</b> average value vs the closing price</p>
+    <div class="list" style="gap:6px">${r.slice(-6).reverse().map(x => `<div class="mrow"><span>${esc(betLabel(x.b))} · ${fmtX(x.b.mult)}</span><b style="color:${x.v >= 0 ? "#4ade80" : "#f87171"}">${x.v >= 0 ? "+" : "−"}${Math.abs(x.v * 100).toFixed(0)}%</b></div>`).join("")}</div>
+    <p class="fine" style="text-align:left;margin:0">value = your multiplier × the books' final fair chance, minus 1. beat the close over 100+ bets and the edge is likely real, win or lose on any one night.</p></div>`;
+}
+function renderResults() {   // Insights: one chart (your profit), everything else as plain numbers
   const v = $("v-results"); if (!v) return;
   const all = betsList().map(b => ({ ...b, st: betStatus(b) }));
   const done = all.filter(b => isDone(b.st)), open = all.filter(b => !isDone(b.st));
   const profit = done.reduce((a, b) => a + b.st.profit, 0), risk = open.reduce((a, b) => a + b.stake, 0), could = open.reduce((a, b) => a + b.stake * (b.mult - 1), 0);
-  const put = all.reduce((a, b) => a + b.stake, 0), back = done.reduce((a, b) => a + (b.st.won ? b.stake * b.mult : 0), 0), w = done.filter(b => b.st.won).length;
-  const card = (title, right, body, note) => body ? `<div class="gcard"><h3>${title}${right ? `<b>${right}</b>` : ""}</h3>${body}${note ? `<p class="fine" style="text-align:left;margin:0">${note}</p>` : ""}</div>` : "";
-  const soon = (title, need) => `<div class="gcard dim"><h3>${title}</h3><p class="fine" style="text-align:left;margin:0">${need}</p></div>`;
-  const byTeam = groupProfit(done, b => b.type === "parlay" ? null : nick(b.team)), byPick = groupProfit(done, b => b.type === "parlay" ? "parlays" : b.ourPick ? "lockski's pick" : "my own pick");
-  const byOdds = groupProfit(done, b => b.type === "parlay" ? null : b.mult < 1.5 ? "big favorites" : b.mult < 2 ? "favorites" : "underdogs");
-  const byDow = groupProfit(done, b => dayObj(b.date).toLocaleDateString([], { weekday: "long" }).toLowerCase());
-  const model = graphModel();
+  const put = all.reduce((a, b) => a + b.stake, 0), putDone = done.reduce((a, b) => a + b.stake, 0), w = done.filter(b => b.st.won).length;
+  const sgn = x => x >= 0 ? "up" : "dn", sp = x => `${x >= 0 ? "+" : "−"}${Math.abs(x * 100).toFixed(0)}%`;
+  const row = (label, val, cls) => `<div class="irow"><span>${label}</span><b class="${cls || ""}">${val}</b></div>`;
+  const grp = (k) => groupProfit(done, k);
+  const byPick = grp(b => b.type === "parlay" ? "parlays" : b.line != null ? "spreads" : b.ourPick ? "lockski's pick" : "your own pick");
+  const byOdds = grp(b => b.type === "parlay" ? null : b.mult < 1.5 ? "big favorites (under 1.5x)" : b.mult < 2 ? "favorites (1.5x to 2x)" : "underdogs (2x and up)");
+  const byTeam = grp(b => b.type === "parlay" ? null : nick(b.team));
+  const best = done.filter(b => b.st.won).sort((a, b) => b.st.profit - a.st.profit)[0];
+  const rec = x => `${x.w}–${x.n - x.w}`;
+  const g = ledgerRows().graded, gw = g.filter(r => r.ok).length, strong = g.filter(r => r.p >= .6), sw = strong.filter(r => r.ok).length;
+  const ls = S.model && S.model.ledgerSummary, vm = ls && ls.vsMarket;
   v.innerHTML = `
-    <div><h1>graphs</h1><p class="sub">every dollar you put down, live. bets still going are drawn before they finish.</p></div>
+    <div><h1>insights</h1><p class="sub">your betting and lockski's record, in plain numbers.</p></div>
     ${all.length ? `
     <div class="hero">
       <div class="pl"><b>${money(profit, true)}</b><span>${profit >= 0 ? "profit so far" : "down so far"} · ${units(profit)}${open.length ? ` · ${money(risk)} riding on ${open.length} bet${open.length > 1 ? "s" : ""} right now` : ""}</span></div>
       ${graphLive(all)}
-      <div class="legend"><span>finished bets</span>${open.length ? `<span class="l2">if open bets win (${money(profit + could, true)})</span><span class="l3">if they lose (${money(profit - risk, true)})</span><span class="l4">bar = bet still going</span>` : `<span class="l4">bars: white won, gray lost</span>`}</div>
-      <div class="stats3"><div><b>${money(put)}</b><span>put down</span></div><div><b>${done.length ? `${w}–${done.length - w}` : "–"}</b><span>record</span></div><div><b>${money(could, true)}</b><span>open bets could win</span></div></div>
     </div>
-    ${card("money down per day", money(put) + " total", graphDays(all), "lighter bars still have bets going.")}
-    ${done.length >= 3 ? card("how often you win", pct(w / done.length), graphRate(done), "your win rate after each finished bet. above the line means more wins than losses.") : soon("how often you win", `shows after 3 finished bets (${done.length} so far).`)}
-    ${done.length ? card("in and out", `${money(back)} back`, hbars([{ label: "put down", v: put, n: 1, rec: false }, { label: "came back", v: back, n: 1, rec: false }, { label: "profit", v: profit, n: 1, rec: false }]), "money in, money out, and what's left over.") : ""}
-    ${byPick.length ? card("following lockski vs going your own way", "", hbars(byPick), "profit when you took our pick, your own pick, or a parlay.") : soon("following lockski vs going your own way", "shows after your first finished bet.")}
-    ${byOdds.length ? card("favorites vs underdogs", "", hbars(byOdds), "big favorites pay under 1.5x, favorites 1.5x to 2x, underdogs 2x and up.") : ""}
-    ${byTeam.length ? card("profit by team", "", hbars(byTeam.slice(0, 10)), "your best and worst teams to bet on.") : ""}
-    ${byDow.length >= 2 ? card("profit by day of the week", "", hbars(byDow), "") : ""}`
-    : `<div class="empty"><b>your graphs start with your first bet</b><p>go to home or games, tap a game, hit "i took this bet", and type how much you put down. every bet shows up here the moment you save it.</p></div>`}
-    ${(() => { const ls = S.model && S.model.ledgerSummary; const vm = ls && ls.vsMarket; return ls && ls.graded >= 10 ? `<div class="gcard dim"><h3>forward test so far <b>${ls.graded} games</b></h3><p class="fine" style="text-align:left;margin:0">these are real pregame calls, graded after the fact. right ${pct(ls.accuracy)} · brier ${ls.brier}${vm ? ` · vs sportsbooks on ${vm.games} games: our brier ${vm.lockskiBrier ?? "–"}, theirs ${vm.marketBrier ?? "–"} (lower is better)` : ""}. small samples swing a lot; judge after a few hundred.</p></div>` : ""; })()}
-    ${(() => { const gg = ledgerRows().graded, ww = gg.filter(r => r.ok).length; return gg.length ? `<div class="gcard" id="gc-model"><h3>lockski's picks, all time <b>${ww}–${gg.length - ww}</b></h3>${graphPicks()}<div class="legend"><span class="lg-g">green = picked right</span><span class="lg-r">red = picked wrong</span><span>line = % right so far</span></div></div>` : `<div class="gcard dim" id="gc-model"><h3>lockski's picks, all time</h3><p class="fine" style="text-align:left;margin:0">the chart starts with the first graded pick.</p></div>`; })()}
-    ${model ? card("lockski's picks over time", `${ledgerRows().graded.filter(r => r.ok).length}–${ledgerRows().graded.filter(r => !r.ok).length}`, model, "solid line: our wins minus losses. dashed line: what $10 on every one of our picks at sportsbook prices would have made.") : soon("lockski's picks over time", "shows once we've graded 3 picks.")}`;
+    <div class="tiles">
+      <div><b>${done.length ? `${w}–${done.length - w}` : "–"}</b><span>your record</span></div>
+      <div><b>${done.length ? pct(w / done.length) : "–"}</b><span>of your bets won</span></div>
+      <div><b class="${putDone ? sgn(profit) : ""}" style="color:${putDone ? (profit >= 0 ? "#4ade80" : "#f87171") : "inherit"}">${putDone ? sp(profit / putDone) : "–"}</b><span>return on money bet</span></div>
+      <div><b>${money(put)}</b><span>put down in total${open.length ? ` · could win ${money(could)} more` : ""}</span></div>
+    </div>
+    ${done.length ? `<div class="gcard"><h3>what's working</h3>
+      ${byPick.map(x => row(`${x.label} · ${rec(x)}`, money(x.v, true), sgn(x.v))).join("")}
+      ${byOdds.map(x => row(`${x.label} · ${rec(x)}`, money(x.v, true), sgn(x.v))).join("")}
+      ${byTeam.length >= 2 ? row(`best team for you: ${esc(byTeam[0].label)}`, money(byTeam[0].v, true), sgn(byTeam[0].v)) + (byTeam[byTeam.length - 1].v < 0 ? row(`toughest team: ${esc(byTeam[byTeam.length - 1].label)}`, money(byTeam[byTeam.length - 1].v, true), "dn") : "") : ""}
+      ${best ? row(`biggest win: ${esc(betLabel(best))} at ${fmtX(best.mult)}`, money(best.st.profit, true), "up") : ""}
+    </div>` : ""}`
+    : `<div class="empty"><b>your insights start with your first bet</b><p>tap a game, hit "i took this bet", and type how much you put down. every number here updates the moment you save it.</p></div>`}
+    ${clvCard()}
+    <div class="gcard" id="gc-model"><h3>lockski's record <b>${g.length ? `${gw}–${g.length - gw}` : "0–0"}</b></h3>
+      ${g.length ? `${row("picks right", pct(gw / g.length))}${strong.length ? row(`60%+ picks · ${sw}–${strong.length - sw}`, pct(sw / strong.length)) : ""}
+      ${vm && vm.games >= 10 ? row(`picking winners vs the sportsbooks (${vm.games} games)`, `${pct(vm.lockskiAcc)} vs ${pct(vm.marketAcc)}`) : ""}
+      <div class="chips" style="margin-top:4px">${g.slice(0, 12).reverse().map(r => `<i class="${r.ok ? "w" : "l"}">${esc(r.pick)}</i>`).join("")}</div>` : `<p class="fine" style="text-align:left;margin:0">starts with the first graded pick. every pick is locked before puck drop and graded after.</p>`}
+      <p class="fine" style="text-align:left;margin:0">past seasons (2,624 games): ${S.model && S.model.replay && S.model.replay.models ? pct(S.model.replay.models["Lockski (production settings)"].acc) : "57%"} of winners picked. one night proves little; a few hundred picks tell the story.</p>
+    </div>`;
 }
 $("v-results").addEventListener("click", e => { const g = e.target.closest("[data-gid]"); if (g) openSheet(g.dataset.gid); });
 
@@ -1083,7 +1180,7 @@ function plEst(m, team, home, line) {   // estimated multiplier from the sportsb
 }
 function plMkt(m, team, home, line) { const k = m && m.market && m.market.pl; if (!k || line == null) return null; const isH = team === home; return (isH ? k.homeLine : k.awayLine) === Number(line) ? (isH ? k.pHome : k.pAway) : null; }
 const plKey = (gid, side, line) => `${gid}:${side}:${Number(line) > 0 ? "p" : "m"}15`;
-function plMultFor(m, team, home, line, key) { const v = PRICES[key]; if (v != null && v !== "" && Number(v) >= 1.01) return { x: Number(v), typed: true }; const e = plEst(m, team, home, line); return e ? { x: e, typed: false } : null; }
+function plMultFor(m, team, home, line, key) { const qs = venueQuotes(m, team, line, key), r = bestReal(qs); if (r) return { x: r.x, typed: true, v: r.v }; const e = qs.find(q => q.v === "books"); return e ? { x: e.x, typed: false, v: "books" } : null; }
 function liveCover(gid, team, home, line) {   // live chance a puck-line pick covers; moneyline picks use teamLive
   if (line == null) return teamLive(gid, team, home);
   const l = liveOf(gid); if (!l || !l.live) return null;
@@ -1225,16 +1322,89 @@ $("v-mine").addEventListener("click", e => {
 /* ---------------- Details sheet ---------------- */
 const FN = { "5-on-5 play": "Better team overall", "Special teams": "Power play and penalty kill", "Home ice": "Playing at home", "Goaltending": "Goalies",
   "Injuries": "Injuries", "Rest and travel": "Rest and travel", "Calibration": "Final adjustment" };
-function multFor(m, side, key) {   // typed multiplier wins, else the estimate
-  const v = PRICES[key];
-  if (v != null && v !== "" && Number(v) >= 1.01) return { x: Number(v), typed: true };
-  const e = estMult(m, side); return e ? { x: e, typed: false } : null;
+/* ---------------- Where to bet: best price across the places you can use ----------------
+   Kalshi and Polymarket prices are live offers (refreshed every few minutes by the engine); Kalshi's includes its fee,
+   Polymarket's is before fees. PrizePicks only when you type its multiplier. Sportsbooks are a reference only (not
+   legal in SC), used for the call only when nothing you can actually bet has a price. */
+const VN = { kalshi: "Kalshi", polymarket: "Polymarket", prizepicks: "PrizePicks", books: "Sportsbooks" };
+function venueQuotes(m, team, line, key) {
+  const out = [], vs = (m && m.venues) || {}, lk = line == null ? null : `${team}:${Number(line) > 0 ? "+1.5" : "-1.5"}`;
+  for (const v of ["kalshi", "polymarket"]) { const q = vs[v] && (lk ? (vs[v].pl || {})[lk] : (vs[v].ml || {})[team]); if (q && q.x > 1) out.push({ v, x: q.x, real: true, note: v === "polymarket" ? "before fees" : "after fees" }); }
+  const t = PRICES[key]; if (t != null && t !== "" && Number(t) >= 1.01) out.push({ v: "prizepicks", x: Number(t), real: true, note: "you typed" });
+  const home = m && team === m.home, e = !m ? null : line == null ? estMult(m, home ? "home" : "away") : plEst(m, team, m.home, line);
+  if (e) out.push({ v: "books", x: e, real: false, note: "reference" });
+  return out.sort((a, b) => b.x - a.x);
+}
+/* News for a game: each team's latest items (Daily Faceoff beat-writer reports, ESPN headlines), newest first. */
+const agoShort = iso => { const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000)); return m < 60 ? `${m}m ago` : m < 48 * 60 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`; };
+function newsHtml(g) {
+  const N = (S.model && S.model.news) || {}, seen = new Set();
+  const items = [...(N[g.away] || []), ...(N[g.home] || [])].filter(x => !seen.has(x.text) && seen.add(x.text)).sort((a, b) => (b.at || "") < (a.at || "") ? -1 : 1).slice(0, 5);
+  if (!items.length) return "";
+  return `<h3 class="sec">latest news</h3><div>${items.map(x => `<div class="nrow"><span class="nt">${esc(agoShort(x.at))} · ${esc(x.src)}${x.by ? ` via ${esc(x.by)}` : ""}${x.cat ? ` · ${esc(String(x.cat).toLowerCase())}` : ""}${x.strength === "Confirmed" ? " · confirmed" : ""}</span>
+    <p>${x.player ? `<b>${esc(x.player)}</b>: ` : ""}${esc(x.text)}</p>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">read on espn →</a>` : ""}</div>`).join("")}</div>`;
+}
+function moveHtml(m) {   // prices jumped 5+ points in the last few hours: usually news
+  const mv = m && m.move; if (!mv) return "";
+  const up = mv.to > mv.from;
+  return `<div class="call news"><b>line moved</b><span>${esc(nick(mv.team))} went from ${Math.round(mv.from * 100)}¢ to ${Math.round(mv.to * 100)}¢ on ${esc(VN[mv.venue] || mv.venue)} in the last ${mv.mins >= 90 ? Math.round(mv.mins / 60) + " hours" : mv.mins + " minutes"} (${up ? "more" : "less"} likely to win, says the market). that usually means news. check the latest below before you bet.</span></div>`;
+}
+/* ---------------- Compare lines ----------------
+   One screen with every live price for a game (or each game of a parlay) from the places you can bet in SC:
+   Kalshi, Polymarket, PrizePicks (the multiplier you typed) and the sportsbooks as a reference. The best price you
+   can actually bet in each column is highlighted; a check means it pays at least lockski's worth-it price. */
+function linesGame(gid) {
+  const m = S.model && S.model.games && S.model.games[gid]; if (!m) return "";
+  const g = allGames().find(x => x.id === gid) || { id: gid, away: m.away, home: m.home, startUTC: null };
+  const col = (team, line) => { const side = team === g.home ? "home" : "away", key = line == null ? `${g.id}:${side}` : plKey(g.id, side, line);
+    return { team, line, p: line == null ? (team === g.home ? m.pHome : m.pAway) : plProb(m, team, g.home, line), qs: venueQuotes(m, team, line, key) }; };
+  const k = m.market && m.market.pl, giv = k ? (k.homeLine < 0 ? g.home : g.away) : (m.pHome >= m.pAway ? g.home : g.away), get = giv === g.home ? g.away : g.home;
+  const cols = [col(g.away, null), col(g.home, null), ...(m.pl ? [col(giv, -1.5), col(get, 1.5)] : [])];
+  const vs = m.venues || {}, best = cols.map(c => bestReal(c.qs));
+  const link = { kalshi: (vs.kalshi && vs.kalshi.url) || "https://kalshi.com/markets/kxnhlgame", polymarket: (vs.polymarket && vs.polymarket.url) || "https://polymarket.com/sports/nhl/games", prizepicks: PP_URL };
+  const sub = { kalshi: "after fees", polymarket: "before fees", prizepicks: "type it in the game", books: "reference, not in SC" };
+  const table = (title, cs) => { const off = cols.indexOf(cs[0]);
+    const row = v => `<tr><th scope="row">${link[v] ? `<a href="${esc(link[v])}" target="_blank" rel="noopener noreferrer">${VN[v]} ↗</a>` : VN[v]}<small>${sub[v]}</small></th>${cs.map((c, j) => { const q = c.qs.find(x => x.v === v);
+      return q ? `<td class="${best[off + j] === q ? "best" : ""}"><b>${fmtX(q.x)}</b>${q.x >= minMult(c.p) ? " ✓" : ""}</td>` : `<td class="na">–</td>`; }).join("")}</tr>`;
+    return `<div class="lwrap"><table class="ltable"><thead><tr><th scope="col" style="text-align:left;color:var(--muted);font-size:11px;letter-spacing:.1em">${title}</th>${cs.map(c => `<th>${badge(c.team, "s")}${esc(nick(c.team))}${c.line != null ? esc(lineTxt(c.line)) : ""}</th>`).join("")}</tr></thead><tbody>
+      <tr class="ours"><th scope="row">lockski chance</th>${cs.map(c => `<td>${c.p != null ? pct(c.p) : "–"}</td>`).join("")}</tr>
+      <tr class="ours"><th scope="row">worth it at</th>${cs.map(c => `<td>${c.p != null ? fmtX(minMult(c.p)) + "+" : "–"}</td>`).join("")}</tr>
+      ${["kalshi", "polymarket", "prizepicks", "books"].map(row).join("")}
+    </tbody></table></div>`; };
+  const age = vs.at ? Math.max(0, Math.round((Date.now() - Date.parse(vs.at)) / 60000)) : null;
+  return `<div class="lgame"><p class="m" style="margin:0;color:var(--muted);font-size:13px">${esc(full(g.away))} at ${esc(full(g.home))}${g.startUTC ? ` · ${esc(whenTxt(g))}` : ""}${age != null ? ` · prices from ${age < 1 ? "just now" : age + " min ago"}` : ""}</p>
+    ${table("to win", cols.slice(0, 2))}${cols.length > 2 ? table("puck line", cols.slice(2)) : ""}</div>`;
+}
+function openLines(gids) {
+  const ids = [...new Set(gids.filter(Boolean))];
+  $("sheet-card").onclick = null; $("sheet-card").oninput = null;
+  $("sheet-card").innerHTML = `<button class="x" data-close="1" aria-label="Close">×</button>
+    <h2 id="sh-title" class="h2">compare lines</h2>
+    <p class="m" style="margin:0;color:var(--muted);font-size:14px">live prices from the places you can bet. the best one in each column is highlighted; ✓ means it pays at least lockski's worth-it price. tap a site to open it.</p>
+    ${ids.map(linesGame).join("") || `<div class="empty"><b>no prices yet</b><p>kalshi and polymarket usually post nhl games a few days ahead.</p></div>`}
+    <p class="fine" style="text-align:left">kalshi includes its trading fee; polymarket is before fees (they depend on your account). prizepicks shows only when you type its multiplier in the game screen. sportsbooks are a reference for the fair price; they aren't legal in sc.</p>`;
+  lastFocus = lastFocus || document.activeElement;
+  $("sheet").hidden = false; document.body.style.overflow = "hidden"; $("sheet-card").scrollTop = 0; $("sheet-card").querySelector(".x").focus();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-lines]"); if (!b) return; e.preventDefault(); e.stopPropagation(); openLines(b.dataset.lines.split(",")); }, true);
+function bestReal(qs) { const r = qs.filter(q => q.real); return r.length ? r[0] : null; }
+function quotesHtml(qs) {
+  if (!qs.length) return "";
+  const best = bestReal(qs);
+  return `<div class="list" style="gap:0">${qs.map(q => `<div class="irow"><span>${VN[q.v]} · ${q.note}${q === best ? ` <b style="color:var(--fg)">· best</b>` : ""}</span><b style="${q === best ? "" : "color:var(--muted);font-weight:600"}">${fmtX(q.x)}</b></div>`).join("")}</div>`;
+}
+function multFor(m, side, key) {   // best price you can actually bet (Kalshi, Polymarket, typed PrizePicks), else the sportsbook estimate
+  const team = m ? (side === "home" ? m.home : m.away) : null, qs = venueQuotes(m, team, null, key), r = bestReal(qs);
+  if (r) return { x: r.x, typed: true, v: r.v };
+  const e = qs.find(q => q.v === "books"); return e ? { x: e.x, typed: false, v: "books" } : null;
 }
 function callHtml(p, m, side, key) {
   const mu = multFor(m, side, key), d = mu && decide(p, mu.x, mu.typed);
-  if (!d) return `<div class="call no"><b>Type the multiplier</b><span>No PrizePicks estimate for this game yet. Type the multiplier you see on PrizePicks below.</span></div>`;
+  if (!d) return `<div class="call no"><b>No price yet</b><span>Kalshi, Polymarket and the sportsbooks haven't posted this game. Type the PrizePicks multiplier below if you see one.</span></div>`;
+  const team = side === "home" ? m.home : m.away;
   return `<div class="call ${d.k}"><b>${esc(d.t)}</b><span>${esc(d.s)}</span></div>
-    <div class="mrow"><span>${mu.typed ? "PrizePicks pays" : "PrizePicks pays about"}</span><b>${fmtX(mu.x)}</b></div>`;
+    <div class="mrow"><span>best price you can bet${mu.v && mu.v !== "books" ? ` · ${VN[mu.v]}` : ""}</span><b>${fmtX(mu.x)}</b></div>
+    ${quotesHtml(venueQuotes(m, team, null, key))}`;
 }
 let lastFocus = null;
 function openSheet(id, opts) {
@@ -1291,7 +1461,7 @@ function openSheet(id, opts) {
     const rows = [[giv, -1.5], [get, 1.5]].map(([t, ln]) => {
       const sd = t === g.home ? "home" : "away", pr = plProb(m, t, g.home, ln), mu = plMultFor(m, t, g.home, ln, plKey(g.id, sd, ln)), d = mu && decide(pr, mu.x, mu.typed);
       const inT = SLIP.some(l => l.gid === g.id && l.team === t && l.line === ln);
-      return `<div class="plrow">${badge(t, "s")}<div class="pln"><b>${esc(nl(t, ln))}</b><span class="m">${pct(pr)} chance${mu ? ` · ${mu.typed ? "" : "about "}${fmtX(mu.x)}` : ""}</span></div>
+      return `<div class="plrow">${badge(t, "s")}<div class="pln"><b>${esc(nl(t, ln))}</b><span class="m">${pct(pr)} chance${mu ? ` · ${mu.typed ? "" : "about "}${fmtX(mu.x)}${mu.v && mu.v !== "books" ? ` on ${VN[mu.v]}` : ""}` : ""}</span></div>
         <span class="pill ${d ? d.k : ""}">${esc(d ? d.pill : `worth it at ${fmtX(minMult(pr))}+`)}</span>
         <div class="plb"><button class="plus${inT ? " in" : ""}" data-plleg="${t}" data-line="${ln}" aria-label="${inT ? "Remove" : "Add"} ${esc(nl(t, ln))} ${inT ? "from" : "to"} parlay">${inT ? "✓" : "+"}</button><button class="pltook" data-pltook="${t}" data-line="${ln}">i took ${esc(nl(t, ln))}</button></div></div>`;
     }).join("");
@@ -1320,10 +1490,11 @@ function openSheet(id, opts) {
     ${lv && (lv.live || lv.final) && !(led && led.result) ? `<div class="box" style="text-align:center"><p class="final" style="font-size:30px;font-weight:700">${esc(g.away)} ${lv.ag} – ${lv.hg} ${esc(g.home)}</p><p class="m">${lv.final ? `final${lv.ot ? " · ot" : ""}` : esc(liveTxt(g.id).replace(/^\d+–\d+ · /, "")) + " · live"}${lv.sa != null ? ` · shots ${lv.sa}–${lv.sh}` : ""}</p>${lv.live && liveProb(g.id) != null ? `<p style="margin-top:6px"><b>${esc(nick(g.away))} ${pct(1 - liveProb(g.id))}</b> · <b>${esc(nick(g.home))} ${pct(liveProb(g.id))}</b> <span class="m">to win right now</span></p>` : ""}</div>` : ""}
     ${!started && m && !scoreOnly ? `<div class="box">
       <div style="display:flex;align-items:center;gap:12px">${badge(fav)}<p><b>Take ${esc(nick(fav))} to win</b><br><span class="m">${pct(p)} chance · worth it at ${fmtX(minMult(p))} or more</span></p></div>
+      ${moveHtml(m)}
       <div id="pp-v" style="display:grid;gap:10px">${callHtml(p, m, side, key)}</div>
       <div id="edge-v" style="display:grid">${edgeHtml(p, m, side, key, fav)}</div>
       <div class="pricebox"><label for="pp-in">Different on PrizePicks? Type it</label><input id="pp-in" inputmode="decimal" placeholder="${(estMult(m, side) || minMult(p)).toFixed(2)}" value="${PRICES[key] != null ? esc(PRICES[key]) : ""}"><span>x</span></div>
-      <a class="go wide" href="${PP_URL}" target="_blank" rel="noopener noreferrer"><span>bet on prizepicks</span>${ppIcon}</a>
+      <button class="go wide" data-lines="${esc(g.id)}"><span>compare lines</span>${ppIcon}</button>
       <div id="legbox" style="display:grid;gap:8px;justify-items:center">${legBox()}</div>
     </div>` : ""}
     ${!started && m && m.pl && !scoreOnly ? `<div class="box" id="plbox" style="gap:12px">${plBox()}</div>` : ""}
@@ -1331,10 +1502,11 @@ function openSheet(id, opts) {
     ${fac ? `<h3 class="sec">Why we like ${esc(nick(fav))}</h3><div class="why">${fac}</div>` : ""}
     ${m ? `<p class="m" style="margin:0;color:var(--muted);font-size:13.5px">Score guess: ${esc(nick(g.away))} ${m.xgAway.toFixed(1)}, ${esc(nick(g.home))} ${m.xgHome.toFixed(1)}</p>` : ""}
     <div class="kv">
-      ${goalieTxt ? `<div><span>Goalies</span><b>${esc(goalieTxt)}</b></div>` : ""}
+      ${goalieTxt ? `<div><span>Goalies</span><b>${m && (m.goalieAwayHs || m.goalieHomeHs) ? `<span style="display:inline-flex;gap:6px;vertical-align:middle;margin-right:8px">${face(m.goalieAwayHs, g.away, "s")}${face(m.goalieHomeHs, g.home, "s")}</span>` : ""}${esc(goalieTxt)}</b></div>` : ""}
       ${inj.length ? `<div><span>Injured</span><b>${inj.map(x => `${esc(x[0])}: ${x[1].map(esc).join(", ")}`).join(" · ")}</b></div>` : ""}
       ${tired.length ? `<div><span>Tired legs</span><b>${tired.map(esc).join(", ")} played last night</b></div>` : ""}
     </div>
+    ${newsHtml(g)}
     ${o ? `<p class="fine" style="text-align:left">Pick saved ${esc(new Date(o.at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}, before the game${led.snapshots && led.snapshots.length > 1 ? ` (${led.snapshots.length} pregame updates)` : ""}.${firstTxt ? " " + esc(firstTxt) + "." : ""}</p>` : ""}`;
   lastFocus = document.activeElement;
   $("sheet").hidden = false; document.body.style.overflow = "hidden";
@@ -1394,9 +1566,9 @@ function staleHtml() {   // shown at the top of home when the last successful up
 }
 const agoTxt = h => h < 1 ? "less than an hour" : h < 48 ? `${Math.round(h)} hours` : `${Math.round(h / 24)} days`;
 let DB_STATE = "connecting";
-const APP_VERSION = "1.2";   // bump with every release
+const APP_VERSION = "1.3";   // bump with every release
 function renderFoot() {
-  $("foot").innerHTML = `<span><a href="tel:18004262537">1-800-gambler</a> · lockski.ai v${APP_VERSION}</span>`;
+  $("foot").innerHTML = `<span><a href="tel:18004262537">1-800-gambler</a> · lockski v${APP_VERSION}</span>`;
 }
 function render() { try { renderBets(); renderHot(); renderGames(); renderMine(); renderResults(); renderFoot(); } catch (e) { console.error(e); } try { checkWins(); } catch (e) { console.warn(e); } }
 /* ---------------- Win celebration ----------------
@@ -1578,19 +1750,28 @@ setView("bets", false);
 (function intro() {
   const el = $("intro");
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.remove(); return; }
-  const paths = [...el.querySelectorAll(".iwm path")], cur = el.querySelector(".cur");
-  const edge = [155, 670, 1169, 1592, 2011, 2446, 2624, 2787, 3264, 3437];   // right edge of each letter
+  const paths = [...el.querySelectorAll(".iwm path")], cur = el.querySelector(".cur"), tag = el.querySelector(".itag"), tagT = tag.querySelector("span"), mas = el.querySelector(".imas");
+  const edge = [155, 670, 1169, 1592, 2011, 2446, 2624];   // right edge of each letter of "lockski"
   let done = false, timers = [];
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
   const finish = () => { if (done) return; done = true; timers.forEach(clearTimeout); paths.forEach(p => p.classList.add("on")); el.classList.add("out"); setTimeout(() => el.remove(), 950); };
   el.addEventListener("click", finish);
   cur.classList.add("blink");
-  let t = 900;                                                    // cursor blinks alone first
+  let t = 900;                                                    // cursor blinks alone first (unchanged timing)
   paths.forEach((p, i) => {
-    t += 230 + Math.random() * 120 + (i === 7 ? 220 : 0);        // slower, uneven keystrokes; short pause before ".ai"
-    timers.push(setTimeout(() => { cur.classList.remove("blink"); p.classList.add("on"); cur.setAttribute("x", edge[i] + 30); }, t));
+    t += 230 + Math.random() * 120;                              // slower, uneven keystrokes
+    at(t, () => { cur.classList.remove("blink"); p.classList.add("on"); cur.setAttribute("x", edge[i] + 30); });
   });
-  timers.push(setTimeout(() => cur.classList.add("blink"), t + 150));
-  timers.push(setTimeout(finish, t + 1700));                      // hold the finished logo, then fade
+  at(t + 150, () => cur.classList.add("blink"));
+  // screen 2: the logo fades to black, "got it on lockski" types out, the lock rises from the bottom and waves, then home
+  const msg = "got it on lockski"; let u = t + 1300;
+  at(u, () => { el.classList.add("p2"); cur.style.visibility = "hidden"; });
+  u += 700; at(u, () => tag.classList.add("on"));
+  u += 250; [...msg].forEach((c, i) => { u += 60 + Math.random() * 50 + (c === " " ? 50 : 0); at(u, () => { tagT.textContent = msg.slice(0, i + 1); }); });
+  at(u + 300, () => { tag.classList.remove("on"); mas.classList.add("in"); });          // rolls in from the left
+  at(u + 1350, () => mas.classList.add("wave"));                                        // stops and waves
+  at(u + 3300, () => { mas.classList.remove("wave", "in"); mas.style.opacity = 1; mas.classList.add("out"); });   // rolls off to the right
+  at(u + 4050, finish);                                                                 // then home
 })();
 
 /* ---------------- Data ---------------- */

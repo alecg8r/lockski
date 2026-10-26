@@ -45,8 +45,8 @@ TUNED = json.loads((D / "tuned.json").read_text())
 STRETCH = TUNED["stretch"]   # calibration from backtest: model was too modest on strong picks
 UNCONF_STARTER_W = 0.80 # weight on Daily Faceoff "unconfirmed" starter (rest = healthy blend)
 HOME_WIN_TARGET = 0.535
-B2B_PENALTY = 0.035
-TRAVEL_PENALTY = 0.015  # road team, previous game 2+ time zones away
+B2B_PENALTY = 0.062   # tested Oct 26 2026 on 5,248 dated games: fit 2022-24, better on 2024-26 in 95% of resamples (was 0.035)
+TRAVEL_PENALTY = 0.0   # road team, previous game 2+ time zones away: no measurable effect in the same test (was 0.015)
 K_PLAYER_MIN = 300      # player 5v5 minutes for regression of on-ice impact
 PLAYER_SHARE = 0.6      # on-ice results are shared with linemates
 PLAYER_CAP = 0.15       # max goals/game impact per player
@@ -604,7 +604,7 @@ for i, t in enumerate(sorted(out_teams, key=lambda t: -out_teams[t]["rating"]), 
     out_teams[t]["rank"] = i
 
 model = {
-    "version": "v0.6.1", "newGamesApplied": len(inc_games), "recentFormTeams": len(recent_used), "boxScoreCorsiTeamGames": corsi_used[0], "pbpShotQualityTeamGames": pbp_used[0],
+    "version": "v0.6.2", "newGamesApplied": len(inc_games), "recentFormTeams": len(recent_used), "boxScoreCorsiTeamGames": corsi_used[0], "pbpShotQualityTeamGames": pbp_used[0],
     "dataThrough": f"2026-27 to date + 2025-26 prior; goalies: {gd.get('source_goalies') or 'none'}; injuries: {gd.get('source_injuries') or 'none'}",
     "assumptions": {
         "blend5v5": {"xG": W_XG, "corsi": W_CORSI, "fenwick": W_FENWICK, "goals": W_GOALS}, "priorCoef": PRIOR_COEF, "goalieK": K_GOALIE_XGA,

@@ -1,6 +1,11 @@
 {
- "at": "2026-11-13T05:49:50.226156Z",
+ "at": "2026-11-13T05:55:52.416195Z",
  "added": [],
- "errors": [],
+ "errors": [
+  "score 2026-11-13: The read operation timed out",
+  "score 2026-11-12: The read operation timed out",
+  "score 2026-11-11: The read operation timed out",
+  "score 2026-11-10: The read operation timed out"
+ ],
  "games": 157
 }
